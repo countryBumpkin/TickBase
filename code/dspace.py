@@ -55,6 +55,7 @@ class DSpace:
             return True
 
     # get status of tyhe user token/API
+    # returns True if connection successful
     def get_status(self):
         if self.session_id == '':
             print('Warning: get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
@@ -64,8 +65,10 @@ class DSpace:
 
         if r.status_code != 200:
             warnings.warn('connection to '+self.base_url+' failed')
+            return False
         else:
             print(r.json())
+            return True
 
     # Get an array of all the communities in the repository
     def get_communities(self, debug=True):
@@ -197,6 +200,7 @@ class DSpace:
             return r.json()
 
     # Create a new community
+    # TODO: complete this function
     def create_community(self, id=000, name='', handle='', type='community', link='/rest/communities/000',
                         expand=["parentCommunity","collections","subCommunities","logo","all"], logo=None, parentCommunity=None,
                         copyrightText='', introductoryText='', shortDesc='', sidebarText='', countItems=0, subCommunities=[], collections=[]):
@@ -233,7 +237,7 @@ class DSpace:
         print('Implement create collection!')
 
     # create an item and add to collection
-    def create_items(self, cid, name, handle, type='item', link="/rest/items/14301", expand=["metadata","parentCollection","parentCollectionList","parentCommunityList","bitstreams","all"],
+    def create_item(self, cid, name, handle, type='item', link="/rest/items/14301", expand=["metadata","parentCollection","parentCollectionList","parentCommunityList","bitstreams","all"],
                         lastModified='2015-01-12 15:44:12.978', parentCollection=None, parentCollectionList=None, parentCommunityList=None,
                         bitstreams=None, archived='true', withdrawn='false'):
 

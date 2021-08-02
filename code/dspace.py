@@ -33,7 +33,7 @@ class DSpace:
         else:
             return False
 
-    # Attempt to authenticate
+    # Attempt to authenticate, return true if successful
     def authenticate(self):
         #data = 'email={}&password={}'.format('garrettrwells@gmail.com', 'GW091799')
         data = {
@@ -54,8 +54,28 @@ class DSpace:
             print(r.cookies['JSESSIONID'])
             return True
 
+    '''
+        Get the status of the connection to dspace and return a dictionary with the following information:
+
+            okay: boolean state of connection, true if good connection
+            authenticated: true if the session has a valid JSESSIONID, can only be true if user has submitted email and passwd using /login
+            email: email of the user whose account was used for authentication
+            fullname: name/role associated with this account
+            apiVersion: version of the API running on server
+            sourceVersion: version of code on server
+
+    '''
+    def get_session_status(self):
+        r = requests.get(self.base_url+'/status')
+        json_output = r.json()
+
+        return json_output
+
+    # log the current user out of the database
+    def logout(self):
+        r = requests.post(self.base_url + '/logout', cookies=self.session_id)
+
     # get status of tyhe user token/API
-    # returns True if connection successful
     def get_status(self):
         if self.session_id == '':
             print('Warning: get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
@@ -65,10 +85,8 @@ class DSpace:
 
         if r.status_code != 200:
             warnings.warn('connection to '+self.base_url+' failed')
-            return False
         else:
             print(r.json())
-            return True
 
     # Get an array of all the communities in the repository
     def get_communities(self, debug=True):
@@ -128,7 +146,7 @@ class DSpace:
 
         return collections
 
-    # Get an array of all the collections in the repository
+    # Get an array of all the items in the repository
     def get_items(self, debug=True):
         items = []
         offset = 0
@@ -200,7 +218,6 @@ class DSpace:
             return r.json()
 
     # Create a new community
-    # TODO: complete this function
     def create_community(self, id=000, name='', handle='', type='community', link='/rest/communities/000',
                         expand=["parentCommunity","collections","subCommunities","logo","all"], logo=None, parentCommunity=None,
                         copyrightText='', introductoryText='', shortDesc='', sidebarText='', countItems=0, subCommunities=[], collections=[]):
@@ -237,36 +254,62 @@ class DSpace:
         print('Implement create collection!')
 
     # create an item and add to collection
-    def create_item(self, cid, name, handle, type='item', link="/rest/items/14301", expand=["metadata","parentCollection","parentCollectionList","parentCommunityList","bitstreams","all"],
-                        lastModified='2015-01-12 15:44:12.978', parentCollection=None, parentCollectionList=None, parentCommunityList=None,
-                        bitstreams=None, archived='true', withdrawn='false'):
+    def create_item(self, cid, title, author, description, doi):
+        # check connection and authentication status and provide error handling
+        try:
+            status = get_session_status()
+            if not status['authenticated']:
+                raise Exception('Not authenticated, call authenticate() before attempting to get status')
+        except:
+            raise Exception('Connection Failed while checking status in create_item()')
 
-        # construct new item object as dictionary
-        item = {
-                "handle":handle,
-                "name":name,
-                "type":type,
-                "link":link,
-                "expand":["metadata","parentCollection","parentCollectionList","parentCommunityList","bitstreams","all"],
-                "lastModified":lastModified,
-                "parentCollection":None,
-                "parentCollectionList":None,
-                "parentCommunityList":None,
-                "bitstreams":None,
-                "archived":archived,
-                "withdrawn":withdrawn
-            }
+        # construct new item object with metadata using dublin core identifiers
+        payload = json.dumps(
+                    {
+                        "metadata": [
+                            {
+                                "key": "dc.contributor.author",
+                                "value": author
+                            },
+                            {
+                                "key": "dc.description",
+                                "value": description
+                            },
+                            {
+                                "key": "dc.title",
+                                "value": title
+                            },
+                            {
+                                "key": "dc.identifier",
+                                "value": doi
+                            }
+                        ]
+                    }
+                )
 
-        header = {"Content-type": "application/json",
-          "Accept": "text/plain"}
+        # construct headers with session id(authentication key) and submit request
+        headers = {
+            'Authorization': 'Bearer 999C94C5A92473D707225B890C08C398',
+            'Content-Type': 'application/json',
+            'Cookie': 'JSESSIONID='+self.session_id['JSESSIONID']
+        }
+        r = requests.request("POST", self.base_url+'/collections/{}/items'.format(cid), headers=headers, data=payload)
 
-        print(json.dumps(item))
-
-        r = requests.post(self.base_url+'/collections/{}/items'.format(cid), data=item, headers=header, cookies=self.session_id)
+        # Check status of item post and print message if unsuccessful
         if r.status_code != 200:
-            print('TEXT:\n\t',r.text)
+            print('HTTP ERROR RESPONSE:\n\t',r.text)
+        else:
+            print('SUCCESS: ', r.status_code)
 
-        print(r.status_code)
+    # remove an item from the collection, requires UUID instead of handle
+    def delete_item(self, item_id):
+        if uuid.contains('/'):
+            raise Exception('Identifier passed to delete item is invalid, contains \'\/\' try using UUID instead of handle')
+
+        r = requests.delete(self.base_url+'/items/{id}'.format(id=item_id))
+
+        if r.status_code != 200:
+            raise Exception('Unable to remove item from collection, connection failed\n\tHTTP CODE:{}\n\tHTTP BODY{}'.format(r.status_code, r.text))
 
 
     '''

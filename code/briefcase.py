@@ -80,6 +80,15 @@ class Briefcase:
 			os.chdir('..')
 			count = count + 1
 
+	# convert all documents in this container to metadata items that can be posted to dspace
+	def export_to_dspace(self, dspace=None):
+		if dspace is None:
+			raise Exception('no dspace connection provided, use DSpace library to submit valid connection')
+
+		# iterate through container elements and convert each to a dspace item
+		for doc in self.containerDict:
+
+
 	# print contents of the dataframe
 	def print(self):
 		print('\nBriefcase Contains: ---------------\n', self.container)

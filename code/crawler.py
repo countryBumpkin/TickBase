@@ -1,6 +1,14 @@
-import requests
+# libraries external to this project
 from bs4 import BeautifulSoup
 from collections import defaultdict
+import requests
+import csv
+import json
+import datetime
+import pprint
+
+# libraries written for this project
+    # interfaces
 from gscholar_interface import GScholar
 from mendeley_interface import IMendeley
 from mendeleydata_interface import IMendeley_Data
@@ -12,12 +20,12 @@ from springer_interface import ISpringer
 from neon_interface import INeon
 from pubmed_interface import IPubMed
 from lter_interface import ILTER
+    # data structures, data verification, and external object interfaces
 from briefcase import Briefcase
 from doichecker import doichecker
-import csv
-import json
-import datetime
-import pprint
+from dspace import DSpace
+
+
 
 class Crawler:
     dchecker = doichecker()
@@ -159,6 +167,24 @@ class Crawler:
                 self.url_briefcase.to_batch(batch_name)
             except PermissionError:
                 print('ERROR: can\'t save to specified path, close excel/notepad notebook currently displaying %s first' %name)
+
+    # Export metadata to DuraSpace archive
+    def export_to_dspace(self, uname='', passwd='', base_url=''):
+        if not self.url_briefcase.is_empty():
+            if uname == '' or passwd == '' or base_url == '':
+                raise Exception('user name, password, or dspace server url empty in crawler.py export_to_dspace()')
+
+            # open connection with dspace
+            dspc = DSpace(username=uname, password=passwd, base_url=base_url)
+            dspc.authenticate()
+
+            # check connection status and throw error if unsuccessful
+            if !dspc.get_status():
+                raise Exception('error in connection')
+
+
+            # iterate through each data item in collection and create/submit a dspace item for it
+            dspc.create_item()
 
 
     # add one dictionary to another

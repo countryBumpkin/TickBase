@@ -81,13 +81,22 @@ class Briefcase:
 			count = count + 1
 
 	# convert all documents in this container to metadata items that can be posted to dspace
-	def export_to_dspace(self, dspace=None):
+	def export_to_dspace(self, cid='', dspace=None):
 		if dspace is None:
 			raise Exception('no dspace connection provided, use DSpace library to submit valid connection')
 
+		if cid is None:
+			raise Exception('no cid, collection identifier, was specified')
+
 		# iterate through container elements and convert each to a dspace item
 		for doc in self.containerDict:
-
+			dspace.create_item(
+						cid=cid,
+						title=doc['Title'],
+						author=doc['Authors'],
+						description=doc['Abstract'],
+						doi=doc['DOI']
+						)
 
 	# print contents of the dataframe
 	def print(self):

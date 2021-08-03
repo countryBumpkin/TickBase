@@ -72,7 +72,7 @@ class Crawler:
                 # write results to excel file
                 #self.export_to_excel(key)
                 #self.export_to_csv(key)
-                self.export_to_batch(key)
+                #self.export_to_batch(key)
 
         print('\tSUMMARY DICTIONARY:', final_list)
 
@@ -169,22 +169,22 @@ class Crawler:
                 print('ERROR: can\'t save to specified path, close excel/notepad notebook currently displaying %s first' %name)
 
     # Export metadata to DuraSpace archive
-    def export_to_dspace(self, uname='', passwd='', base_url=''):
+    def export_to_dspace(self, cid='', uname='', passwd='', base_url=''):
         if not self.url_briefcase.is_empty():
-            if uname == '' or passwd == '' or base_url == '':
-                raise Exception('user name, password, or dspace server url empty in crawler.py export_to_dspace()')
+            if uname == '' or passwd == '':
+                raise Exception('user name, password empty in crawler.py export_to_dspace()')
 
             # open connection with dspace
-            dspc = DSpace(username=uname, password=passwd, base_url=base_url)
+            dspc = DSpace(username=uname, passwd=passwd)
             dspc.authenticate()
 
             # check connection status and throw error if unsuccessful
-            if !dspc.get_status():
+            if not dspc.get_status():
                 raise Exception('error in connection')
 
-
-            # iterate through each data item in collection and create/submit a dspace item for it
-            dspc.create_item()
+            self.url_briefcase.export_to_dspace(cid=cid, dspace=dspc)
+            # close connection with dspace
+            dspc.logout()
 
 
     # add one dictionary to another
@@ -274,10 +274,10 @@ class CrawlTester:
         folder.print()
 
 
-test = CrawlTester()
+#test = CrawlTester()
 #test.test_GScholar()
 #test.test_Mendeley()
-test.test_MendeleyData()
+#test.test_MendeleyData()
 #test.test_Figshare()
 #test.test_DataDryad()
 #test.test_KNB()

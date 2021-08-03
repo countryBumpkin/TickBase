@@ -84,9 +84,11 @@ class DSpace:
         r = requests.get(self.base_url+'/status')
 
         if r.status_code != 200:
-            warnings.warn('connection to '+self.base_url+' failed')
+            #warnings.warn('connection to '+self.base_url+' failed')
+            return False
         else:
-            print(r.json())
+            print(r.text)
+            return True
 
     # Get an array of all the communities in the repository
     def get_communities(self, debug=True):
@@ -256,12 +258,12 @@ class DSpace:
     # create an item and add to collection
     def create_item(self, cid, title, author, description, doi):
         # check connection and authentication status and provide error handling
-        try:
-            status = get_session_status()
-            if not status['authenticated']:
-                raise Exception('Not authenticated, call authenticate() before attempting to get status')
-        except:
-            raise Exception('Connection Failed while checking status in create_item()')
+        '''try:
+                                    status = get_status()
+                                    if not status:
+                                        raise Exception('Not authenticated, call authenticate() before attempting to get status')
+                                except:
+                                    raise Exception('Connection Failed while checking status in create_item()')'''
 
         # construct new item object with metadata using dublin core identifiers
         payload = json.dumps(

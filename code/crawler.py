@@ -64,7 +64,7 @@ class Crawler:
                         final_list.append(doc)
 
                     else:
-                        print('duplicate doi \n\tDoc DOI:', doc.doi)
+                        #print('duplicate doi \n\tDoc DOI:', doc.doi)
                         continue
 
                 # store results in pandas table

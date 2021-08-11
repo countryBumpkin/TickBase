@@ -4,6 +4,7 @@ import json
 import requests
 import warnings
 from bs4 import BeautifulSoup
+from doiresolver import DOIResolver
 
 # Class provides API for DuraSpace development
 class DSpace:
@@ -33,15 +34,15 @@ class DSpace:
         else:
             return False
 
-    # Attempt to authenticate, return true if successful
+    # attempt to authenticate, return true if successful
     def authenticate(self):
-        #data = 'email={}&password={}'.format('garrettrwells@gmail.com', 'GW091799')
-        data = {
-            'email': 'garrettrwells@gmail.com',
-            'password': 'GW091799'
-        }
+        #payload = 'email=garrettrwells%40gmail.com&password=GW091799'
+        payload='email={}&password={}'.format(self.username, self.passwd)
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+            }
 
-        r = requests.post(self.base_url + '/login', data=data)
+        r = requests.post(self.base_url + '/login', headers=headers, data=payload)
 
         if r.status_code != 200:
             print(self.base_url+'/login')
@@ -53,23 +54,6 @@ class DSpace:
             self.session_id = r.cookies
             print(r.cookies['JSESSIONID'])
             return True
-
-    '''
-        Get the status of the connection to dspace and return a dictionary with the following information:
-
-            okay: boolean state of connection, true if good connection
-            authenticated: true if the session has a valid JSESSIONID, can only be true if user has submitted email and passwd using /login
-            email: email of the user whose account was used for authentication
-            fullname: name/role associated with this account
-            apiVersion: version of the API running on server
-            sourceVersion: version of code on server
-
-    '''
-    def get_session_status(self):
-        r = requests.get(self.base_url+'/status')
-        json_output = r.json()
-
-        return json_output
 
     # log the current user out of the database
     def logout(self):
@@ -89,6 +73,32 @@ class DSpace:
         else:
             print(r.text)
             return True
+
+    '''
+        Get the status of the connection to dspace and return a dictionary with the following information:
+
+            okay: boolean state of connection, true if good connection
+            authenticated: true if the session has a valid JSESSIONID, can only be true if user has submitted email and passwd using /login
+            email: email of the user whose account was used for authentication
+            fullname: name/role associated with this account
+            apiVersion: version of the API running on server
+            sourceVersion: version of code on server
+
+    '''
+    def get_session_status(self):
+        r = requests.get(self.base_url+'/status')
+        json_output = r.json()
+
+        return json_output 
+
+    # get the DSpace metadata for a single item specified by the uuid
+    def get_item_metadata(self, uuid):
+        r = requests.get(self.base_url + '/items/{}/metadata'.format(uuid))
+
+        if r.status_code != 200:
+            raise Exception('unable to get item\n\t', r.text)
+        else:
+            return r.json()[0]
 
     # Get an array of all the communities in the repository
     def get_communities(self, debug=True):
@@ -149,13 +159,23 @@ class DSpace:
         return collections
 
     # Get an array of all the items in the repository
-    def get_items(self, debug=True):
+    # TODO: re-write to get all items from a collection
+    def get_items(self, cid='', debug=True):
         items = []
         offset = 0
 
+        # adjust for cid in urls
+        if cid == '':
+            url = self.base_url + '/items?offset={}&limit=100'
+        else:
+            url = self.base_url + '/collections/{}/items?offset{}&limit=100'.format(cid, '{}')
+
+
+        i = 0
+
         # run loop infinitely or until server can't give full page of results
-        while True:
-            r = requests.get(self.base_url+'/items?offset={}&limit=100'.format(offset))
+        while True and i < 5:
+            r = requests.get(url.format(offset))
 
             # make sure request went through, otherwise throw error
             if r.status_code != 200:
@@ -169,13 +189,15 @@ class DSpace:
             else:
                 offset = offset + 100
 
+            i = i + 1
+
         # print info about all communities returned
         if debug:
             for i in r.json():
                 print('ITEM \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
-        return items
+        return items[0]
 
     # Get an array of all the collections in the repository
     def get_bitstreams(self, debug=True):
@@ -218,6 +240,81 @@ class DSpace:
         else:
             print('After Get Handle:', r.json())
             return r.json()
+
+    def get_item(self, uuid):
+        r = requests.get(self.base_url+'/items/{}'.format(uuid))
+
+        if r.status_code != 200:
+            raise Exception('connection to '+self.base_url+' failed')
+        else:
+            print('After Get Item:', r.json())
+            return r.json()
+
+    # update the metadata record for an item using a list structure or the doi of the item
+    def update_item(self, ditem, new_meta={}):
+        doi = ''
+        if ditem is {} and new_meta is {}:
+            raise Exception('insufficient information, need dspace item json object or doi resolver json object')
+
+        elif ditem is not {}:
+            # get metadata so we can get DOI to resolve
+            temp_meta = self.get_item_metadata(ditem['uuid'])
+            print(temp_meta)
+            doi = temp_meta['dc.identifier']
+            new_meta = self.get_item_metadata(doi)
+    
+        # parse the metadata we need straight from doi.org
+        '''{'indexed': {'date-parts': [[2021, 8, 4]], 'date-time': '2021-08-04T08:25:17Z', 'timestamp': 1628065517179}, 'reference-count': 65, 
+        'publisher': 'Institute of Electrical and Electronics Engineers (IEEE)', 'issue': '7', 'content-domain': {'domain': [], 'crossmark-restriction': False}, 
+        'published-print': {'date-parts': [[1999, 7]]}, 'DOI': '10.1109/5.771073', 'type': 'article-journal', 'created': {'date-parts': [[2002, 8, 24]], 
+        'date-time': '2002-08-24T16:26:37Z', 'timestamp': 1030206397000}, 'page': '1208-1227', 'source': 'Crossref', 'is-referenced-by-count': 18, 
+        'title': 'Toward unique identifiers', 'prefix': '10.1109', 'volume': '87', 'author': [{'given': 'N.', 'family': 'Paskin', 'sequence': 'first', 
+        'affiliation': []}], 'member': '263', 'container-title': 'Proceedings of the IEEE', 'original-title': [], 
+        'link': [{'URL': 'http://xplorestaging.ieee.org/ielx5/5/16709/00771073.pdf?arnumber=771073', 'content-type': 'unspecified', 'content-version': 'vor', 
+        'intended-application': 'similarity-checking'}], 'deposited': {'date-parts': [[2017, 3, 9]], 'date-time': '2017-03-09T20:41:02Z', 'timestamp': 1489092062000}, 'score': 1.0, 'subtitle': [], 'short-title': [], 
+        'issued': {'date-parts': [[1999, 7]]}, 'references-count': 65, 'journal-issue': {'issue': '7'}, 'URL': 'http://dx.doi.org/10.1109/5.771073', 'relation': {}, 'ISSN': ['0018-9219'], 'container-title-short': 'Proc. IEEE'}'''
+
+        # format metadata and upload
+        payload = [
+            {
+                'key': 'dc.title',
+                'value': new_meta['title'] 
+            },
+            {
+                'key': 'dc.identifier.uri', 
+                'value': new_meta['URL'], 
+            },
+            {
+                'key': 'dc.contributor.author',
+                'value': dres.authors_to_str(new_meta['author'])
+            },
+            {
+                'key': 'dc.publisher',
+                'value': new_meta['publisher']
+            }
+        ]
+
+        r = requests.post(self.base_url + '/items/{}/metadata'.format(dmeta['uuid']), data=payload, cookies=self.session_id)
+
+        if r.status_code != 200:
+            raise Exception('could not update item', r.text)
+
+    # update all items in a collection or list of collections
+    def update_items(self, cids=[]):
+        items = []
+
+        # get all known metadata for items in specified collections
+        # will use uuids to resolve dois
+        for cid in cids:
+            # get items in collection
+            item_list = self.get_items(cid=cid)
+            # add each new item to the comprehensive list
+            for item in item_list:
+                items.append(item)
+
+        # for each item, get uuid and doi by getting item metadata(dspace), then update that item
+            self.update_item(ditem=ditem)
+
 
     # Create a new community
     def create_community(self, id=000, name='', handle='', type='community', link='/rest/communities/000',
@@ -305,14 +402,21 @@ class DSpace:
 
     # remove an item from the collection, requires UUID instead of handle
     def delete_item(self, item_id):
-        if uuid.contains('/'):
+        if '/' in item_id:
             raise Exception('Identifier passed to delete item is invalid, contains \'\/\' try using UUID instead of handle')
 
-        r = requests.delete(self.base_url+'/items/{id}'.format(id=item_id))
+        r = requests.delete(self.base_url+'/items/{id}'.format(id=item_id), cookies=self.session_id)
 
         if r.status_code != 200:
             raise Exception('Unable to remove item from collection, connection failed\n\tHTTP CODE:{}\n\tHTTP BODY{}'.format(r.status_code, r.text))
 
+    # delete all items from the dspace collection specified
+    def empty_collection(self, cid):
+        items = self.get_items(cid=cid)
+        print(items)
+        for item in items:
+            print(item)
+            self.delete_item(item['uuid'])
 
     '''
         iterate through csv and convert each entry into a dspace 'item'

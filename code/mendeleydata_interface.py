@@ -114,28 +114,16 @@ class IMendeley_Data(Portal):
         for person in auth_list:
             print('PERSON:\n\t', person)
             if person is not None:
-                has_first = False
+                dirty_name = person['name']
+                comma_pos = dirty_name.find(',')
+                clean_name = dirty_name[comma_pos+1:] + ' ' + dirty_name[:comma_pos]
                 if i == 0:
-                    if 'firstName' in person.keys():
-                        has_first = True
-                        authors = person['firstName']
-
-                    if 'lastName' in person.keys():
-                        if has_first:
-                            authors = authors + ' ' + person['lastName']
-                        else:
-                            authors = person['lastName']
-
-                elif i < len(auth_list):
-                    if 'firstName' in person.keys():
-                        authors = authors + ', ' + person['firstName']
-
-                    if 'lastName' in person.keys():
-                        if has_first:
-                            authors = authors + ' ' + person['lastName']
-                        else:
-                            authors = authors + ', ' + person['lastName']
+                    authors = clean_name
+                elif i >= 1:
+                    authors = authors + ', ' + clean_name
             i = i + 1
+
+        print('AUTHORS:', authors)
 
         if authors == '':
             return 'None'

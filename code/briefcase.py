@@ -116,16 +116,16 @@ class Document:
 		self.doi = doi
 		self.datatype = datatype
 
-		self.data = defaultdict(list)
+		self.data = {}
 
-		self.data['Title'].append(title)
-		self.data['Authors'].append(authors)
-		self.data['Source'].append(source)
-		if link != 'https://default_link': self.data['Link'].append(link)
-		self.data['Abstract'].append(abstract)
-		self.data['Keywords'].append(keywords)
-		self.data['DOI'].append(doi)
-		self.data['Datatype'].append(datatype)
+		self.data['Title'] = title 
+		self.data['Authors'] = authors
+		self.data['Source'] = source
+		if link != 'https://default_link': self.data['Link'] = link
+		self.data['Abstract'] = abstract
+		self.data['Keywords'] = keywords
+		self.data['DOI'] = doi
+		self.data['Datatype'] = datatype
 
 	def get_title(self):
 		return self.data['Title']

@@ -96,9 +96,13 @@ class DSpace:
         r = requests.get(self.base_url + '/items/{}/metadata'.format(uuid))
 
         if r.status_code != 200:
-            raise Exception('unable to get item\n\t', r.text)
+            raise Exception('unable to get item: ' + uuid + '\n\t' + r.text)
         else:
-            return r.json()[0]
+            # convert from DSpace complex metadata format to simple key value pair dict
+            dense_meta = {} # dictionary with simple key, value pairs
+            for meta in r.json():
+                dense_meta[meta['key']] = meta['value']
+            return dense_meta
 
     # Get an array of all the communities in the repository
     def get_communities(self, debug=True):
@@ -160,7 +164,7 @@ class DSpace:
 
     # Get an array of all the items in the repository
     # TODO: re-write to get all items from a collection
-    def get_items(self, cid='', debug=True):
+    def get_items(self, cid='', debug=False):
         items = []
         offset = 0
 
@@ -258,46 +262,56 @@ class DSpace:
 
         elif ditem is not {}:
             # get metadata so we can get DOI to resolve
-            temp_meta = self.get_item_metadata(ditem['uuid'])
-            print(temp_meta)
-            doi = temp_meta['dc.identifier']
-            new_meta = self.get_item_metadata(doi)
-    
-        # parse the metadata we need straight from doi.org
-        '''{'indexed': {'date-parts': [[2021, 8, 4]], 'date-time': '2021-08-04T08:25:17Z', 'timestamp': 1628065517179}, 'reference-count': 65, 
-        'publisher': 'Institute of Electrical and Electronics Engineers (IEEE)', 'issue': '7', 'content-domain': {'domain': [], 'crossmark-restriction': False}, 
-        'published-print': {'date-parts': [[1999, 7]]}, 'DOI': '10.1109/5.771073', 'type': 'article-journal', 'created': {'date-parts': [[2002, 8, 24]], 
-        'date-time': '2002-08-24T16:26:37Z', 'timestamp': 1030206397000}, 'page': '1208-1227', 'source': 'Crossref', 'is-referenced-by-count': 18, 
-        'title': 'Toward unique identifiers', 'prefix': '10.1109', 'volume': '87', 'author': [{'given': 'N.', 'family': 'Paskin', 'sequence': 'first', 
-        'affiliation': []}], 'member': '263', 'container-title': 'Proceedings of the IEEE', 'original-title': [], 
-        'link': [{'URL': 'http://xplorestaging.ieee.org/ielx5/5/16709/00771073.pdf?arnumber=771073', 'content-type': 'unspecified', 'content-version': 'vor', 
-        'intended-application': 'similarity-checking'}], 'deposited': {'date-parts': [[2017, 3, 9]], 'date-time': '2017-03-09T20:41:02Z', 'timestamp': 1489092062000}, 'score': 1.0, 'subtitle': [], 'short-title': [], 
-        'issued': {'date-parts': [[1999, 7]]}, 'references-count': 65, 'journal-issue': {'issue': '7'}, 'URL': 'http://dx.doi.org/10.1109/5.771073', 'relation': {}, 'ISSN': ['0018-9219'], 'container-title-short': 'Proc. IEEE'}'''
+            #print('DITEM UUID:', ditem['uuid'])
+            dspace_meta = self.get_item_metadata(ditem['uuid'])
 
-        # format metadata and upload
-        payload = [
-            {
-                'key': 'dc.title',
-                'value': new_meta['title'] 
-            },
-            {
-                'key': 'dc.identifier.uri', 
-                'value': new_meta['URL'], 
-            },
-            {
-                'key': 'dc.contributor.author',
-                'value': dres.authors_to_str(new_meta['author'])
-            },
-            {
-                'key': 'dc.publisher',
-                'value': new_meta['publisher']
+            # handle errors with bad/insufficient metadata
+            if 'dc.identifier' not in dspace_meta.keys() or dspace_meta['dc.identifier'] == '':
+                print('no doi attached to object\n\t\t', dspace_meta)
+                return
+
+            doi = dspace_meta['dc.identifier']
+            dres = DOIResolver()
+            new_meta = dres.get_meta(doi)
+            #print('NEW META:\n\t\t', new_meta)
+
+            # make sure abstract exists before adding to metadata
+            abstract = ''
+            if 'abstract' in new_meta.keys():
+                abstract = new_meta['abstract']
+
+            # format metadata and upload
+            payload = json.dumps([
+                {
+                    'key': "dc.identifier.uri", 
+                    'value': new_meta['URL'], 
+                    'language': None
+                },
+                {
+                    'key': 'dc.contributor.author',
+                    'value': dres.authors_to_str(new_meta['author']),
+                    'language': None
+                },
+                {
+                    'key': 'dc.publisher',
+                    'value': new_meta['publisher'],
+                    'language': None
+                },
+                {
+                    'key': 'dc.description.abstract',
+                    'value': abstract,
+                    'language': None
+                }
+            ])
+
+            headers = {
+                'Content-Type': 'application/json'
             }
-        ]
 
-        r = requests.post(self.base_url + '/items/{}/metadata'.format(dmeta['uuid']), data=payload, cookies=self.session_id)
+            r = requests.post(self.base_url + '/items/{}/metadata'.format(ditem['uuid']), headers=headers, data=payload, cookies=self.session_id)
 
-        if r.status_code != 200:
-            raise Exception('could not update item', r.text)
+            if r.status_code != 200:
+                raise Exception('could not update item', r.text)
 
     # update all items in a collection or list of collections
     def update_items(self, cids=[]):
@@ -313,7 +327,8 @@ class DSpace:
                 items.append(item)
 
         # for each item, get uuid and doi by getting item metadata(dspace), then update that item
-            self.update_item(ditem=ditem)
+        for item in items:
+            self.update_item(item)
 
 
     # Create a new community

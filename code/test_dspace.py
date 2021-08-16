@@ -4,6 +4,7 @@ from crawler import Crawler
 from mendeleydata_interface import IMendeley_Data
 from doiresolver import DOIResolver
 import requests
+import unittest
 
 # test framework for the DSpace interface
 class TestDSpace:
@@ -17,11 +18,9 @@ class TestDSpace:
         dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
         dspc.authenticate()
         container = dspc.get_status()
-        if container: 
-            points = 1
-        else:
-            points = 0
         dspc.logout()
+
+        self.assertEqual(container, True)
 
         return points
 
@@ -53,6 +52,12 @@ class TestDSpace:
         item = dspc.get_item(uuid='195dea78-0729-46f0-bb63-40bf4ed1908d')
         dspc.update_item(ditem=item)
 
+    # test updating all items in a collection
+    def test_update_items(self):
+        dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+        dspc.authenticate()
+        dspc.update_items(cids=['67720a66-6412-4f76-8f18-80d516633cee'])
+
     # test getting a single item from dspace
     def test_get_item(self):
         dspce = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
@@ -83,6 +88,11 @@ class TestDSpace:
             return 1
         else:
             return 0
+
+    def test_get_metadata(self):
+        dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+        dspc.authenticate()
+        print('Metadata\n\t', dspc.get_item_metadata('195dea78-0729-46f0-bb63-40bf4ed1908d'))
 
 # test framework for the DOIResolver program
 class TestDOIResolver:
@@ -122,7 +132,7 @@ class TestDOIResolver:
         return 0
 
 
-print(TestDSpace().test_update_item())
+print(TestDSpace().test_update_items())
 #print(TestDOIResolver().test_all())
 '''
 a.create_community(id=000, name='Test Community', handle='1234/1', link='/rest/communities/000',

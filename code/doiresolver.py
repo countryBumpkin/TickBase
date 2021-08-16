@@ -17,13 +17,24 @@ class DOIResolver:
 
 	# convert a list of authors in a dictionary to a string that can be processed by dspace
 	def authors_to_str(self, author_list):
+		#print('author_list:\n\t', author_list)
 		author_string = ''
 		num = 0
 		for author in author_list:
 			if num == 0:
-				author_string = '{given} {family}'.format(given=author['given'], family=author['family'])
+				if 'given' in author.keys():
+					author_string = '{given} {family}'.format(given=author['given'], family=author['family'])
+				elif 'literal' in author.keys():
+					author_string = author['literal']
+				else:
+					print('error not sure what this is')
 			elif num >= 1:
-				author_string = author_string + ', {given} {family}'.format(given=author['given'], family=author['family'])
+				if 'given' in author.keys():
+					author_string = author_string + ', {given} {family}'.format(given=author['given'], family=author['family'])
+				elif 'literal' in author.keys():
+					author_string = author_string + ', ' + author['literal']
+				else:
+					print('error not sure what this is')
 
 			num = num+1
 

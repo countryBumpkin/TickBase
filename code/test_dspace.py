@@ -9,7 +9,9 @@ import requests
 class TestDSpace:
 
     def test_all(self):
-        points = self.test_authenticate() + self.test_crawler_integeration()
+        points = self.test_authenticate() + self.test_crawler_integeration() +
+                    self.test_single_item() + self.get_items() +
+                    self.test_get_item() + self.test_update_item() + self.test_delete_items()
         print('TEST RESULTS:\n\tscore = ', str(points) + '/2', sep='')
 
     # test authenticating a session
@@ -39,41 +41,55 @@ class TestDSpace:
 
     # test creation of a single item
     def test_single_item(self):
-        a = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
-        a.authenticate()
-        a.create_item(cid='67720a66-6412-4f76-8f18-80d516633cee', title='test 2', author='H. G. Wells', description='test upload', doi='10.12345/123124')
-        #a.delete_item('123456789/18')
-        a.get_items()
-        a.logout()
+        try:
+            a = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+            a.authenticate()
+            a.create_item(cid='67720a66-6412-4f76-8f18-80d516633cee', title='test 2', author='H. G. Wells', description='test upload', doi='10.12345/123124')
+            #a.delete_item('123456789/18')
+            a.get_items()
+            a.logout()
+            return 1
+        except:
+            return 0
 
     # test updating a single item
     def test_update_item(self):
-        dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
-        dspc.authenticate()
-        item = dspc.get_item(uuid='195dea78-0729-46f0-bb63-40bf4ed1908d')
-        dspc.update_item(ditem=item)
+        try:
+            dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+            dspc.authenticate()
+            item = dspc.get_item(uuid='195dea78-0729-46f0-bb63-40bf4ed1908d')
+            dspc.update_item(ditem=item)
+            return 1
+
+        except:
+            return 0
 
     # test getting a single item from dspace
     def test_get_item(self):
-        dspce = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
-        dspce.authenticate()
+        try:
+            dspce = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+            dspce.authenticate()
 
-        print(dspce.get_item('195dea78-0729-46f0-bb63-40bf4ed1908d'))
-        return 1
+            print(dspce.get_item('195dea78-0729-46f0-bb63-40bf4ed1908d'))
+            return 1
+        except:
+            return 0
 
     # test getting all items from a collection
     def test_get_items(self):
-        a = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
-        a.authenticate()
-        #a.get_communities()
-        #a.get_collections()
-        #a.get_bitstreams()
-        #a.get_handle(handle = '123456789/3')
-        items = a.get_items(cid='67720a66-6412-4f76-8f18-80d516633cee')
-        print(items)
-        a.logout()
-
-        return 1
+        try:
+            a = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+            a.authenticate()
+            #a.get_communities()
+            #a.get_collections()
+            #a.get_bitstreams()
+            #a.get_handle(handle = '123456789/3')
+            items = a.get_items(cid='67720a66-6412-4f76-8f18-80d516633cee')
+            print(items)
+            a.logout()
+            return 1
+        except:
+            return 0
 
     def test_delete_items(self):
         dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')

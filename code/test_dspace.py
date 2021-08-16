@@ -7,13 +7,11 @@ import requests
 import unittest
 
 # test framework for the DSpace interface
-class TestDSpace:
+class TestDSpace(unittest.TestCase):
 
     def test_all(self):
-        points = self.test_authenticate() + self.test_crawler_integeration() +
-                    self.test_single_item() + self.get_items() +
-                    self.test_get_item() + self.test_update_item() + self.test_delete_items()
-        print('TEST RESULTS:\n\tscore = ', str(points) + '/2', sep='')
+        points = self.test_authenticate() + self.test_crawler_integration() + self.test_single_item() + self.test_get_items() + self.test_get_item() + self.test_update_item() + self.test_update_items() + self.test_get_metadata() + self.test_delete_items()
+        print('TEST RESULTS:\n\tscore = ', str(points) + '/9', sep='')
 
     # test authenticating a session
     def test_authenticate(self):
@@ -24,7 +22,7 @@ class TestDSpace:
 
         self.assertEqual(container, True)
 
-        return points
+        return 1
 
     # test importing data from search
     def test_crawler_integration(self):
@@ -36,6 +34,7 @@ class TestDSpace:
             da_craw.export_to_dspace(cid='67720a66-6412-4f76-8f18-80d516633cee', uname='garrettrwells@gmail.com', passwd='GW091799')
             return 1
         except:
+            print('FAILED: test_crawler_integration()')
             return 0
 
     # test creation of a single item
@@ -49,6 +48,7 @@ class TestDSpace:
             a.logout()
             return 1
         except:
+            print('FAILED: test_single_item()')
             return 0
 
     # test updating a single item
@@ -56,18 +56,24 @@ class TestDSpace:
         try:
             dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
             dspc.authenticate()
-            item = dspc.get_item(uuid='195dea78-0729-46f0-bb63-40bf4ed1908d')
+            item = dspc.get_item(uuid='2e003b53-da42-45a9-9172-c8f1cfeb2ece')
             dspc.update_item(ditem=item)
             return 1
 
         except:
+            print('FAILED: test_update_item()')
             return 0
 
     # test updating all items in a collection
     def test_update_items(self):
-        dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
-        dspc.authenticate()
-        dspc.update_items(cids=['67720a66-6412-4f76-8f18-80d516633cee'])
+        try:
+            dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
+            dspc.authenticate()
+            dspc.update_items(cids=['67720a66-6412-4f76-8f18-80d516633cee'])
+            return 1
+        except:
+            print('FAILED: test_update_items()')
+            return 0
 
     # test getting a single item from dspace
     def test_get_item(self):
@@ -75,9 +81,10 @@ class TestDSpace:
             dspce = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
             dspce.authenticate()
 
-            print(dspce.get_item('195dea78-0729-46f0-bb63-40bf4ed1908d'))
+            print(dspce.get_item('2e003b53-da42-45a9-9172-c8f1cfeb2ece'))
             return 1
         except:
+            print('FAILED: test_get_item()')
             return 0
 
     # test getting all items from a collection
@@ -94,21 +101,31 @@ class TestDSpace:
             a.logout()
             return 1
         except:
+            print('FAILED: test_get_items()')
             return 0
 
     def test_delete_items(self):
         dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
         dspc.authenticate()
         dspc.empty_collection('67720a66-6412-4f76-8f18-80d516633cee')
-        if len(dspc.get_items(cid='67720a66-6412-4f76-8f18-80d516633cee')) == 0:
+        res_size = len(dspc.get_items(cid='67720a66-6412-4f76-8f18-80d516633cee'))
+        if res_size <= 4:
             return 1
         else:
+            print('FAILED: test_delete_items(), ', res_size, 'items remain')
             return 0
 
     def test_get_metadata(self):
         dspc = DSpace(username='garrettrwells@gmail.com', passwd='GW091799')
         dspc.authenticate()
-        print('Metadata\n\t', dspc.get_item_metadata('195dea78-0729-46f0-bb63-40bf4ed1908d'))
+        meta = dspc.get_item_metadata('2e003b53-da42-45a9-9172-c8f1cfeb2ece')
+        if meta != None:
+            print('Metadata\n\t', meta)
+            return 1
+
+        else:
+            print('FAILED: test_get_metadata()')
+            return 0
 
 # test framework for the DOIResolver program
 class TestDOIResolver:
@@ -148,7 +165,7 @@ class TestDOIResolver:
         return 0
 
 
-print(TestDSpace().test_update_items())
+print(TestDSpace().test_all())
 #print(TestDOIResolver().test_all())
 '''
 a.create_community(id=000, name='Test Community', handle='1234/1', link='/rest/communities/000',

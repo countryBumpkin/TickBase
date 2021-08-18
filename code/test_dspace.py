@@ -164,6 +164,28 @@ class TestDOIResolver:
 
         return 0
 
+    def test_get_meta_bulk(self):
+        doiR = DOIResolver()
+        all_keys = []
+
+        with open("C:/Users/deepg/Documents/TickBase/code/test_dois.csv", 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                temp_row = row[0].replace('[\'', '')
+                temp_row = temp_row.replace('\']', '')
+                print(temp_row)
+
+                meta = doiR.get_meta(doi=temp_row)
+                temp_keys = meta.keys()
+                for key in temp_keys:
+                    if key not in all_keys:
+                        print('some doi meta missing', key)
+                        all_keys.append(key)
+
+                print('\n\t\t', meta)
+
+        print('ALL KEYS FOUND:\n\t', all_keys)
+
 
 print(TestDSpace().test_all())
 #print(TestDOIResolver().test_all())

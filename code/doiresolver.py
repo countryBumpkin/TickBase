@@ -11,6 +11,8 @@ import json
 	Content Negotiation: https://citation.crosscite.org/docs.html
 '''
 class DOIResolver:
+	# keys included in all resolved doi metadata objects
+	doi_keys = ['type', 'id', 'categories', 'language', 'author', 'issued', 'abstract', 'DOI', 'publisher', 'title', 'URL', 'copyright', 'version']
 
 	def __init__(self):
 		self.base_url = 'https://doi.org'
@@ -42,6 +44,15 @@ class DOIResolver:
 
 	'''
 		get the metadata associated with this doi(as dict, list, etc), should be comprehensive, as in all metadata available
+
+		https://www.doi.org/doi_handbook/1_Introduction.html (SECTION 1.6.3 DOI Name Syntax)
+
+			DOIs consist of two parts separated by a '/': 1) the unique naming authority and 2) the unique identifier string
+
+		the attributes contained in the dictionary will not be consistent across repositories, but here are are a few for example.
+			['type', 'id', 'categories', 'language', 'author', 'issued', 'abstract', 'DOI', 'publisher', 'title', 'URL', 'copyright', 'version']
+
+			['type', 'id', 'categories', 'language', 'author', 'issued', 'abstract', 'DOI', 'publisher', 'title', 'URL', 'copyright', 'version', 'contributor', 'indexed', 'reference-count', 'content-domain', 'created', 'source', 'is-referenced-by-count', 'prefix', 'member', 'container-title', 'original-title', 'deposited', 'score', 'subtitle', 'short-title', 'references-count', 'relation']
 	'''
 	def get_meta(self, doi):
 		print('DOI:\n\t', doi)

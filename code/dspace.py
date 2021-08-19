@@ -163,7 +163,6 @@ class DSpace:
         return collections
 
     # Get an array of all the items in the repository
-    # TODO: re-write to get all items from a collection
     def get_items(self, cid='', debug=False):
         items = []
         offset = 0
@@ -300,6 +299,11 @@ class DSpace:
                 {
                     'key': 'dc.description.abstract',
                     'value': abstract,
+                    'language': None
+                },
+                {
+                    'key': 'dc.date',
+                    'value': new_meta['date'],
                     'language': None
                 }
             ])

@@ -43,6 +43,48 @@ class DOIResolver:
 		return author_string
 
 	'''
+		convert issued/deposited field to a conventional date, accepts either the full dictionary from a resolved doi(get_meta()) or will take just the dictionary value associated with 'issued'
+			{'date-parts': [[2017]]}
+			OR
+			{'indexed': {'date-parts': [[2020, 7, 30]], 'date-time': '2020-07-30T11:48:08Z', 'timestamp': 1596109688711}, 'reference-count': 0,
+			'publisher': 'Frontiers Media SA', 'content-domain': {'domain': [], 'crossmark-restriction': False}, 'DOI': '10.3389/fcimb.2019.00477.s001',
+			'type': 'component', 'created': {'date-parts': [[2020, 1, 21]], 'date-time': '2020-01-21T05:22:03Z', 'timestamp': 1579584123000},
+			'source': 'Crossref', 'is-referenced-by-count': 0, 'title': 'Image_1.tiff', 'prefix': '10.3389', 'member': '1965', 'container-title': [], 'original-title': [], 'deposited': {'date-parts': [[2020, 1, 21]], 'date-time': '2020-01-21T05:22:03Z', 
+			'timestamp': 1579584123000}, 'score': 1.0, 'subtitle': [], 'short-title': [], 'issued': {'date-parts': [[None]]}, 'references-count': 0, 'URL': 'http://dx.doi.org/10.3389/fcimb.2019.00477.s001', 'relation': {}} 
+	'''
+	def get_date(self, meta):
+			
+		if 'issued' in meta.keys():
+			meta = meta['deposited']
+		elif 'created' in meta.keys():
+			meta = meta['created']
+		elif 'deposited' in meta.keys():
+			meta = meta['deposited']
+
+		raw = meta['date-parts'][0]
+
+		year = ''
+		month = ''
+		day = ''
+		i = 0
+
+		for segment in raw:
+			if i == 0:
+				year = str(segment)
+			elif i == 1:
+				month = str(segment) + '/'
+			elif i == 2:
+				day = str(segment) + '/'
+
+			i = i + 1
+
+		date = month + day + year
+		print('RAW\n\t\t', raw, '\nDATE\n\t\t', date)
+		return date
+
+
+
+	'''
 		get the metadata associated with this doi(as dict, list, etc), should be comprehensive, as in all metadata available
 
 		https://www.doi.org/doi_handbook/1_Introduction.html (SECTION 1.6.3 DOI Name Syntax)

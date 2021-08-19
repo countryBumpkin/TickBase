@@ -128,12 +128,17 @@ class TestDSpace(unittest.TestCase):
             return 0
 
 # test framework for the DOIResolver program
-class TestDOIResolver:
+class TestDOIResolver(unittest.TestCase):
 
     def test_all(self):
         points = self.test_resolve_meta() + self.test_authors_tostr()
 
         print('TEST RESULTS:\n\tscore = ', points, '/2', sep='')
+
+    def test_get_date(self):
+        dres = DOIResolver()
+        #dres.get_date({'date-parts': [[2017]]})
+        dres.get_date({'indexed': {'date-parts': [[2020, 6, 9]], 'date-time': '2020-06-09T19:21:54Z', 'timestamp': 1591730514246}, 'reference-count': 0, 'publisher': 'Frontiers Media SA', 'content-domain': {'domain': [], 'crossmark-restriction': False}, 'DOI': '10.3389/fcimb.2019.00477.s003', 'type': 'component', 'created': {'date-parts': [[2020, 1, 21]], 'date-time': '2020-01-21T05:22:03Z', 'timestamp': 1579584123000}, 'source': 'Crossref', 'is-referenced-by-count': 0, 'title': 'Table_2.XLS', 'prefix': '10.3389', 'member': '1965', 'container-title': [], 'original-title': [], 'deposited': {'date-parts': [[2020, 1, 21]], 'date-time': '2020-01-21T05:22:04Z', 'timestamp': 1579584124000}, 'score': 1.0, 'subtitle': [], 'short-title': [], 'issued': {'date-parts': [[None]]}, 'references-count': 0, 'URL': 'http://dx.doi.org/10.3389/fcimb.2019.00477.s003', 'relation': {}})
 
     # make sure the doi resolver is outputting real data
     def test_resolve_meta(self):
@@ -187,7 +192,8 @@ class TestDOIResolver:
         print('ALL KEYS FOUND:\n\t', all_keys)
 
 
-print(TestDSpace().test_all())
+print(TestDOIResolver().test_get_date())
+#print(TestDSpace().test_crawler_integration())
 #print(TestDOIResolver().test_all())
 '''
 a.create_community(id=000, name='Test Community', handle='1234/1', link='/rest/communities/000',

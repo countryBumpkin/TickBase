@@ -26,6 +26,7 @@ class DSpace:
         else:
             self.base_url = base_url + '/rest'
 
+
     # Check if REST API is installed
     def api_running(self):
         r = requests.get(self.base_url+'/test')
@@ -33,6 +34,7 @@ class DSpace:
             return True
         else:
             return False
+
 
     # attempt to authenticate, return true if successful
     def authenticate(self):
@@ -55,9 +57,11 @@ class DSpace:
             print(r.cookies['JSESSIONID'])
             return True
 
+
     # log the current user out of the database
     def logout(self):
         r = requests.post(self.base_url + '/logout', cookies=self.session_id)
+
 
     # get status of tyhe user token/API
     def get_status(self):
@@ -74,6 +78,7 @@ class DSpace:
             print(r.text)
             return True
 
+
     '''
         Get the status of the connection to dspace and return a dictionary with the following information:
 
@@ -83,13 +88,13 @@ class DSpace:
             fullname: name/role associated with this account
             apiVersion: version of the API running on server
             sourceVersion: version of code on server
-
     '''
     def get_session_status(self):
         r = requests.get(self.base_url+'/status')
         json_output = r.json()
 
         return json_output 
+
 
     # get the DSpace metadata for a single item specified by the uuid
     def get_item_metadata(self, uuid):
@@ -103,6 +108,7 @@ class DSpace:
             for meta in r.json():
                 dense_meta[meta['key']] = meta['value']
             return dense_meta
+
 
     # Get an array of all the communities in the repository
     def get_communities(self, debug=True):
@@ -133,6 +139,7 @@ class DSpace:
 
         return communities
 
+
     # Get an array of all the collections in the repository
     def get_collections(self, debug=True):
         collections = []
@@ -162,6 +169,7 @@ class DSpace:
 
         return collections
 
+
     # Get an array of all the items in the repository
     def get_items(self, cid='', debug=False):
         items = []
@@ -172,7 +180,6 @@ class DSpace:
             url = self.base_url + '/items?offset={}&limit=100'
         else:
             url = self.base_url + '/collections/{}/items?offset{}&limit=100'.format(cid, '{}')
-
 
         i = 0
 
@@ -201,6 +208,7 @@ class DSpace:
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
         return items[0]
+
 
     # Get an array of all the collections in the repository
     def get_bitstreams(self, debug=True):
@@ -231,6 +239,7 @@ class DSpace:
 
         return bitstreams
 
+
     # return the object specified by the handle passed to this function
     def get_handle(self, handle=''):
         if handle == '':
@@ -244,6 +253,8 @@ class DSpace:
             print('After Get Handle:', r.json())
             return r.json()
 
+
+    # get the metadata from DSpace for an item identified by UUID
     def get_item(self, uuid):
         r = requests.get(self.base_url+'/items/{}'.format(uuid))
 
@@ -252,6 +263,7 @@ class DSpace:
         else:
             print('After Get Item:', r.json())
             return r.json()
+
 
     # update the metadata record for an item using a list structure or the doi of the item
     def update_item(self, ditem, new_meta={}):
@@ -317,6 +329,7 @@ class DSpace:
             if r.status_code != 200:
                 raise Exception('could not update item', r.text)
 
+
     # update all items in a collection or list of collections
     def update_items(self, cids=[]):
         items = []
@@ -336,6 +349,7 @@ class DSpace:
 
 
     # Create a new community
+    # TODO: test this more if needed and clean up later
     def create_community(self, id=000, name='', handle='', type='community', link='/rest/communities/000',
                         expand=["parentCommunity","collections","subCommunities","logo","all"], logo=None, parentCommunity=None,
                         copyrightText='', introductoryText='', shortDesc='', sidebarText='', countItems=0, subCommunities=[], collections=[]):
@@ -367,21 +381,15 @@ class DSpace:
 
         r = requests.put(self.base_url + '/communities', data=community_obj)
 
+
     # TODO implement this function
     def create_collection(self, community=''):
         print('Implement create collection!')
 
+
     # create an item and add to collection
     def create_item(self, cid, title, author, description, doi):
-        # check connection and authentication status and provide error handling
-        '''try:
-                                    status = get_status()
-                                    if not status:
-                                        raise Exception('Not authenticated, call authenticate() before attempting to get status')
-                                except:
-                                    raise Exception('Connection Failed while checking status in create_item()')'''
-
-        # construct new item object with metadata using dublin core identifiers
+        # construct new item object with metadata using dublin core identifiers, convert json dict to string
         payload = json.dumps(
                     {
                         "metadata": [
@@ -413,11 +421,12 @@ class DSpace:
         }
         r = requests.request("POST", self.base_url+'/collections/{}/items'.format(cid), headers=headers, data=payload)
 
-        # Check status of item post and print message if unsuccessful
+        # check status of item post and print message if unsuccessful
         if r.status_code != 200:
             print('HTTP ERROR RESPONSE:\n\t',r.text)
         else:
             print('SUCCESS: ', r.status_code)
+
 
     # remove an item from the collection, requires UUID instead of handle
     def delete_item(self, item_id):
@@ -439,15 +448,16 @@ class DSpace:
 
     '''
         iterate through csv and convert each entry into a dspace 'item'
-        then create a new dspace collection and place items in the collection
+        then create a new dspace collection and place items in the collection.
+
+        TODO: decide whether this is a helpful feature or not 
     '''
     def import_csv(self, filepath):
-
         # list of XML objects formatted as dspace 'items' to add to the repository
         items = []
 
+        # currently just prints out the key word
         with open(filepath, 'r') as csv_file:
             r = csv.reader(csv_file)
-
             for row in r:
                 print(row[1])

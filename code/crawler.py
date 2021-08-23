@@ -43,12 +43,14 @@ class Crawler:
         self.search_keys = res
         print(res)
 
+
     # returns a tuple containing a dictionary of sources found by search,
     def search(self, keywords=[]):
-        # clear briefcase
+        # create new briefcase for storing data as member variable
         self.url_briefcase = Briefcase()
         final_list = []
 
+        # run query for each keyword passed in
         for row in keywords:
             for key in row:
                 if key == '':
@@ -58,27 +60,27 @@ class Crawler:
                 print('\nSEARCH TARGET =', key)
                 r = self.interface.query(key)
 
-                # TODO: test combining dictionaries
+                # check each document DOI retrieved by query for duplicates
                 for doc in r:
                     if not self.dchecker.duplicate(doc.doi):
                         final_list.append(doc)
-
                     else:
-                        #print('duplicate doi \n\tDoc DOI:', doc.doi)
                         continue
 
                 # store results in pandas table
                 self.build_table(search_result=r)
-                # write results to excel file
+                # test writing results to table
                 #self.export_to_excel(key)
                 #self.export_to_csv(key)
                 #self.export_to_batch(key)
 
         print('\tSUMMARY DICTIONARY:', final_list)
 
+
     # search all keys passed to the program
     def search_all(self):
         self.search(self.search_keys)
+
 
     # retrieve all links from search results
     def build_table(self, search_result):
@@ -86,6 +88,7 @@ class Crawler:
         # most interfaces return list of document objects
         type, output = self.interface.get_content(search_result)
 
+        # check format of search output and process results
         if type == 'json':
             print(output)
 
@@ -93,7 +96,6 @@ class Crawler:
             bs = BeautifulSoup(output, 'html.parser')
             for lnkd_url in self.get_linked_urls(search_result.url, search_result.text):
                 if lnkd_url != 'javascript:void(0)' and lnkd_url != search_result.url:
-                    #print('\n', lnkd_url)
                     # store url in data structure
                     self.url_briefcase.add({'URL':lnkd_url, 'publication_date': '{:%d-%m-%Y}'.format(datetime.datetime.today())})
                     #self.url_briefcase.print()
@@ -105,6 +107,7 @@ class Crawler:
 
 
     # parse an html document for all hyper links
+    # TODO: currently don't think this function is used as no query results are currently returned in HTML
     def get_linked_urls(self, url, html):
         soup = BeautifulSoup(html, 'html.parser')
         num_links = 0
@@ -119,7 +122,9 @@ class Crawler:
 
         print('Related Links Found', num_links)
 
-    # export results to a spreadsheet or csv
+
+    # export results for a specific query to a spreadsheet or csv
+    # tags the file with keyword, date, and source
     def export_to_excel(self, keyword=''):
         print('\n\nexporting excel')
         if not self.url_briefcase.is_empty():
@@ -138,6 +143,8 @@ class Crawler:
         else:
             print('database empty, error')
 
+
+    # send metadata in briefcase data structure to a csv file
     def export_to_csv(self, keyword=''):
         print('\n\nexporting csv')
         if not self.url_briefcase.is_empty():
@@ -156,7 +163,9 @@ class Crawler:
         else:
             print('database empty, error')
 
+
     # Export metadata to a DuraSpace simple archive formatted as a dublin core XML
+    # TODO: this submission method does not currently work
     def export_to_batch(self, keyword=''):
         print('\n\nexporting batch')
         if not self.url_briefcase.is_empty():
@@ -168,7 +177,9 @@ class Crawler:
             except PermissionError:
                 print('ERROR: can\'t save to specified path, close excel/notepad notebook currently displaying %s first' %name)
 
+    
     # Export metadata to DuraSpace archive
+    # preferred submission method to any DSpace collection archive
     def export_to_dspace(self, cid='', uname='', passwd='', base_url=''):
         if not self.url_briefcase.is_empty():
             if uname == '' or passwd == '':
@@ -188,6 +199,7 @@ class Crawler:
 
 
     # add one dictionary to another
+    # TODO: written for use with SQLAlchemy and SQL database creation, consider removing as not currently used
     def combine_dictionaries(self, dict_a={}, dict_b={}):
         for key in dict_b.keys():
             if key in dict_a.keys():
@@ -198,7 +210,9 @@ class Crawler:
         print('\t\tFINAL DICT:', dict_a)
         return dict_a
 
-    # export a dictionary of data to a database
+
+    # export a dictionary of data to a SQL database
+    # TODO: consider removing as is unused
     def export_to_db(self, user='', table_name='', database='', password='', server='', data_dict={}):
         data_framed = panda.DataFrame(data_dict) # convert dict to frame
         print(data_framed.to_string())
@@ -207,6 +221,7 @@ class Crawler:
         data_framed.to_sql(table_name, con=engine, index=False)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
+
 
 # implements tests  for the various interfaces that have been developed to search databases
 class CrawlTester:

@@ -399,7 +399,6 @@ class DSpace:
 
     # create an item and add to collection
     def create_item(self, cid, title, author, description, doi):
-<<<<<<< HEAD
         dres = DOIResolver()
         if doi != '':
             sup_meta = dres.get_meta(doi)
@@ -411,10 +410,7 @@ class DSpace:
         else:
             abstract = ''
 
-        # construct new item object with metadata using dublin core identifiers
-=======
         # construct new item object with metadata using dublin core identifiers, convert json dict to string
->>>>>>> origin/main
         payload = json.dumps(
                     {
                         "metadata": [

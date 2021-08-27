@@ -400,14 +400,6 @@ class DSpace:
     # create an item and add to collection
     def create_item(self, cid, title, author, description, doi):
 <<<<<<< HEAD
-        # check connection and authentication status and provide error handling
-        '''try:
-                                    status = get_status()
-                                    if not status:
-                                        raise Exception('Not authenticated, call authenticate() before attempting to get status')
-                                except:
-                                    raise Exception('Connection Failed while checking status in create_item()')'''
-
         dres = DOIResolver()
         if doi != '':
             sup_meta = dres.get_meta(doi)

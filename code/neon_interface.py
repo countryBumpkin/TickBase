@@ -1,6 +1,8 @@
 import json
 import pandas as pd
 import requests
+# Levenshtein partial string matching
+from fuzzywuzzy import fuzz
 from portal_interface import Portal
 from briefcase import Document
 
@@ -23,20 +25,11 @@ class INeon(Portal):
 
         # iterate through all key-value pairs in dictionary and check for keyword
         for dict_key in keys:
-            #print('dict key =', dict_key)
             # check iterable types for the key
-            if hasattr(dict_item[dict_key], '__iter__') and dict_item[dict_key] is not None:
-                if key in dict_item[dict_key]:
-                    print('ITEM CONTAINS KEY: \'', key, '\'')
-                    return True
-                else:
-                    continue
-
-            # check other non-iterable types for key
-            elif type(dict_item[dict_key]) is not bool and dict_item[dict_key] is not None and key in dict_item[dict_key]:
+            if isinstance(dict_item[dict_key], String) and fuzz.ratio(key, dict_item[dict_key]) > 90:
                 print('ITEM CONTAINS KEY: \'', key, '\'')
                 return True
-
+                
             else:
                 print('CAN\'T CHECK DATA:', dict_item[dict_key])
 

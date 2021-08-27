@@ -16,27 +16,29 @@ class INeon(Portal):
         self.tag = 'neon'
         self.result_type = 'data'
 
-    # use python string parsing to check important elements of the dict contain the keyword
+    # use python string parsing to check if important elements of the dict contain the keyword
     def __contains__(self, dict_item, key):
-        contains_key = False
         keys = dict_item.keys()
         print('dict keys list =', keys)
 
-        # iterate through all keys in dictionary and check if associated string contains relevant data
+        # iterate through all key-value pairs in dictionary and check for keyword
         for dict_key in keys:
-            print('dict key =', dict_key)
-            # check if data type is iterable
+            #print('dict key =', dict_key)
+            # check iterable types for the key
             if hasattr(dict_item[dict_key], '__iter__') and dict_item[dict_key] is not None:
                 if key in dict_item[dict_key]:
-                    print('found match')
+                    print('ITEM CONTAINS KEY: \'', key, '\'')
                     return True
                 else:
-                    print('empty')
+                    continue
+
+            # check other non-iterable types for key
             elif type(dict_item[dict_key]) is not bool and dict_item[dict_key] is not None and key in dict_item[dict_key]:
-                print('found match')
+                print('ITEM CONTAINS KEY: \'', key, '\'')
                 return True
+
             else:
-                print('completely empty')
+                print('CAN\'T CHECK DATA:', dict_item[dict_key])
 
         return False
 
@@ -59,14 +61,14 @@ class INeon(Portal):
         # check for http error codes
         if r.status_code < 400:
             result = r.json()
-            print('RAW JSON\n\t', result)
+            print('RAW JSON\n\t', result.keys(), '\n\t', result)
 
-            # iterate through results and check for our key word in each field
+            # iterate through results and check for our keyword in each returned result
             for item in result['data']:
+                # ensure NEON result contains search keyword
                 if self.__contains__(item, key):
                     # save the metadata for later reference
                     print('RAW DOC\n\t', item)
-                    print('item contains key')
 
                     doc = Document(title=item['productName'],
                                     link=item['productCode'],
@@ -79,7 +81,7 @@ class INeon(Portal):
                     docs.append(doc)
 
                 else:
-                    print("item doesn't contain key")
+                    print("MISSING SEARCH KEY: \'", key, '\'')
 
             return docs
 

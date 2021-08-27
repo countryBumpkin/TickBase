@@ -267,7 +267,7 @@ class CrawlTester:
 
     def test_Neon(self):
         gs = INeon()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path='test_search.csv')
         a.search_all()
 
     def test_PubMed(self):

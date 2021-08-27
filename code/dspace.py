@@ -286,26 +286,36 @@ class DSpace:
             new_meta = dres.get_meta(doi)
             #print('NEW META:\n\t\t', new_meta)
 
-            # make sure abstract exists before adding to metadata
+            # check for keys before adding them to metadata
             abstract = ''
+            URL = ''
+            authors = ''
+            publisher = ''
+            date = ''
             if 'abstract' in new_meta.keys():
                 abstract = new_meta['abstract']
+            if 'URL' in new_meta.keys():
+                URL = new_meta['URL']
+            if 'author' in new_meta.keys():
+                authors = dres.authors_to_str(new_meta['author'])
+            if 'publisher' in new_meta.keys():
+                publisher = new_meta['publisher']
 
             # format metadata and upload
             payload = json.dumps([
                 {
                     'key': "dc.identifier.uri", 
-                    'value': new_meta['URL'], 
+                    'value': URL, 
                     'language': None
                 },
                 {
                     'key': 'dc.contributor.author',
-                    'value': dres.authors_to_str(new_meta['author']),
+                    'value': authors,
                     'language': None
                 },
                 {
                     'key': 'dc.publisher',
-                    'value': new_meta['publisher'],
+                    'value': publisher,
                     'language': None
                 },
                 {
@@ -315,7 +325,7 @@ class DSpace:
                 },
                 {
                     'key': 'dc.date',
-                    'value': new_meta['date'],
+                    'value': dres.get_date(new_meta),
                     'language': None
                 }
             ])
@@ -389,7 +399,30 @@ class DSpace:
 
     # create an item and add to collection
     def create_item(self, cid, title, author, description, doi):
+<<<<<<< HEAD
+        # check connection and authentication status and provide error handling
+        '''try:
+                                    status = get_status()
+                                    if not status:
+                                        raise Exception('Not authenticated, call authenticate() before attempting to get status')
+                                except:
+                                    raise Exception('Connection Failed while checking status in create_item()')'''
+
+        dres = DOIResolver()
+        if doi != '':
+            sup_meta = dres.get_meta(doi)
+        else:
+            sup_meta = {}
+
+        if 'abstract' in sup_meta.keys():
+            abstract = sup_meta['abstract']
+        else:
+            abstract = ''
+
+        # construct new item object with metadata using dublin core identifiers
+=======
         # construct new item object with metadata using dublin core identifiers, convert json dict to string
+>>>>>>> origin/main
         payload = json.dumps(
                     {
                         "metadata": [
@@ -408,6 +441,14 @@ class DSpace:
                             {
                                 "key": "dc.identifier",
                                 "value": doi
+                            },
+                            {
+                                'key': 'dc.date',
+                                'value': dres.get_date(sup_meta)
+                            },
+                            {
+                                'key': 'dc.description.abstract',
+                                'value': abstract
                             }
                         ]
                     }

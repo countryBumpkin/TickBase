@@ -52,6 +52,8 @@ class IMendeley_Data(Portal):
                 #print('decode error')
                 break
 
+            print('RAW DOC\n\t', r_json)
+
             # make sure there are some results to parse
             if r_json['count'] == 0 or len(r_json['results']) == 0:
                 #print('\nNO RESULTS\n')
@@ -72,6 +74,7 @@ class IMendeley_Data(Portal):
                 keys = item.keys()
                 doi = ''
                 authors = ''
+                keywords = []
 
                 if 'doi' in keys:
                     doi = item['doi']
@@ -80,11 +83,17 @@ class IMendeley_Data(Portal):
                     authors = self._get_authors(item['authors'])
                     print('AUTHORS:\n\t', authors)
 
+                if 'containerKeywords' in keys:
+                    keywords = item['containerKeywords']
+
                 file = Document(title=item['containerTitle'],
                                 source=item['source'],
+                                abstract=item['containerDescription'],
                                 link=item['containerURI'],
                                 authors=authors,
                                 doi=doi,
+                                date=item['publicationDate'],
+                                keywords=keywords,
                                 datatype=item['containerDataTypes'])
 
                 results.append(file)

@@ -39,9 +39,9 @@ class doichecker:
                         return True
 
                     print(row[2])
-                # append doi to end of file
-                if row[2] != '':
-                    self.doi_list.append(row[2])
+                    # append doi to end of file
+                    if row[2] != '':
+                        self.doi_list.append(row[2])
             except:
                 print('Failed to read rows')
                 traceback.print_exc()

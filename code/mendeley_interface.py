@@ -43,10 +43,13 @@ class IMendeley(Portal):
         # Document list
         results = []
         for doc in catalog_search.iter():
-            #print(doc)
+            print('RAW DOC\n\t', doc)
+            print('DOC\n\t', doc.id, doc.identifiers['doi'])
             auth_list = self._get_authors(doc.authors)
             print('AUTHORS:\n\t', auth_list)
-            file = Document(title=doc.title, source=doc.source, link=doc.link, abstract=doc.abstract, authors=auth_list)
+            file = Document(title=doc.title, source=doc.source, link=doc.link, 
+                abstract=doc.abstract, authors=auth_list, datatype=doc.type, 
+                date=doc.year, keywords=doc.keywords, doi=doc.identifiers['doi'])
             results.append(file)
             file.print()
 

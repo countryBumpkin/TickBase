@@ -113,7 +113,7 @@ class Briefcase:
 '''
 class Document:
 
-	def __init__(self, title='', authors='', link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown'):
+	def __init__(self, title='', authors='', link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown', date=''):
 		self.title = title
 		self.authors = authors
 		self.link = link
@@ -122,6 +122,7 @@ class Document:
 		self.keywords = keywords
 		self.doi = doi
 		self.datatype = datatype
+		self.date = date
 
 		# provide all data in dictionary format too
 		self.data = {}
@@ -133,6 +134,7 @@ class Document:
 		self.data['Keywords'] = keywords
 		self.data['DOI'] = doi
 		self.data['Datatype'] = datatype
+		self.data['Date'] = date
 
 	def get_title(self):
 		return self.data['Title']
@@ -182,3 +184,4 @@ class Document:
 		print('\tLINK:', self.data['Link'])
 		print('\tAUTHORS:', self.data['Authors'])
 		print('\tDOI:', self.data['DOI'])
+		print('\tDATE:', self.data['Date'])

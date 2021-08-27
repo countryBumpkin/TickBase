@@ -71,7 +71,7 @@ class Crawler:
                 self.build_table(search_result=r)
                 # test writing results to table
                 #self.export_to_excel(key)
-                #self.export_to_csv(key)
+                self.export_to_csv(key)
                 #self.export_to_batch(key)
 
         print('\tSUMMARY DICTIONARY:', final_list)
@@ -149,9 +149,9 @@ class Crawler:
         print('\n\nexporting csv')
         if not self.url_briefcase.is_empty():
             if keyword == '':
-                name = 'dataTest/{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), '{:%d-%m-%Y}'.format(datetime.datetime.today()))
+                name = 'data_dump/{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), '{:%d-%m-%Y}'.format(datetime.datetime.today()))
             else:
-                name = 'dataTest/{}_{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), keyword, '{:%d-%m-%Y}'.format(datetime.datetime.today()))
+                name = 'data_dump/{}_{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), keyword, '{:%d-%m-%Y}'.format(datetime.datetime.today()))
 
             name = name + '.csv'
             print(name)
@@ -235,13 +235,13 @@ class CrawlTester:
     # test the mendeley interface with the crawler
     def test_Mendeley(self):
         gs = IMendeley()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path="/mnt/c/Users/deepg/Documents/TickBase/searches/test_search.csv")
         a.search_all()
 
     # test the mendeley data portal interface with the crawler
     def test_MendeleyData(self):
         gs = IMendeley_Data()
-        a = Crawler(repository_interface=gs, csv_path='test_search.csv')
+        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
         a.search_all()
 
     def test_Figshare(self):
@@ -257,7 +257,7 @@ class CrawlTester:
 
     def test_KNB(self):
         gs = IKNB()
-        a = Crawler(repository_interface=gs, csv_path='test_search.csv')
+        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
         a.search_all()
 
     def test_SpringerNature(self):
@@ -289,7 +289,7 @@ class CrawlTester:
         folder.print()
 
 
-#test = CrawlTester()
+test = CrawlTester()
 #test.test_GScholar()
 #test.test_Mendeley()
 #test.test_MendeleyData()
@@ -297,7 +297,7 @@ class CrawlTester:
 #test.test_DataDryad()
 #test.test_KNB()
 #test.test_SpringerNature()
-#test.test_Neon()
+test.test_Neon()
 #test.test_PubMed()
 #test.test_LTER()
 #test.test_briefcase()

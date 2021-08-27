@@ -59,11 +59,13 @@ class INeon(Portal):
         # check for http error codes
         if r.status_code < 400:
             result = r.json()
+            print('RAW JSON\n\t', result)
 
             # iterate through results and check for our key word in each field
             for item in result['data']:
                 if self.__contains__(item, key):
                     # save the metadata for later reference
+                    print('RAW DOC\n\t', item)
                     print('item contains key')
 
                     doc = Document(title=item['productName'],

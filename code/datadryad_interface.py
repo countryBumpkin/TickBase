@@ -23,6 +23,8 @@ class IDataDryad(Portal):
             else:
                 json_out  = r.json()
 
+                print('RAW DOC\n\t', json_out)
+
                 # make sure there are results on this page
                 count = json_out['count']
                 if count <= 0:
@@ -41,6 +43,7 @@ class IDataDryad(Portal):
                                         abstract=item['abstract'],
                                         source='',
                                         doi=item['identifier'],
+                                        date=item['publicationDate'],
                                         datatype=type)
                                         
                         results.append(file)

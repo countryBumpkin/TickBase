@@ -4,6 +4,11 @@ from dcxml import dcxml
 import os
 from collections import defaultdict
 
+'''
+	This is a data structure specifically for collecting lists of formatted article metadata. 
+	The Briefcase consists of a list of Document objects.
+	Metadata can be added and retrieved easily, converted to excel, csv, and dspace collections. 
+'''
 class Briefcase:
 
 	def __init__(self):
@@ -102,11 +107,13 @@ class Briefcase:
 	def print(self):
 		print('\nBriefcase Contains: ---------------\n', self.container)
 
-
-# data holder for data parsed from data repos
+'''
+	data holder for data parsed from data repos, allows conversion from repo metadata tags to 
+	bconsistent metadata tags
+'''
 class Document:
 
-	def __init__(self, title='', authors='', link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown'):
+	def __init__(self, title='', authors='', link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown', date=''):
 		self.title = title
 		self.authors = authors
 		self.link = link
@@ -115,9 +122,10 @@ class Document:
 		self.keywords = keywords
 		self.doi = doi
 		self.datatype = datatype
+		self.date = date
 
+		# provide all data in dictionary format too
 		self.data = {}
-
 		self.data['Title'] = title 
 		self.data['Authors'] = authors
 		self.data['Source'] = source
@@ -126,6 +134,7 @@ class Document:
 		self.data['Keywords'] = keywords
 		self.data['DOI'] = doi
 		self.data['Datatype'] = datatype
+		self.data['Date'] = date
 
 	def get_title(self):
 		return self.data['Title']
@@ -139,7 +148,7 @@ class Document:
 	def get_source(self):
 		return self.data['Source']
 
-	# convert the stored data to a json data object
+	# convert the stored data to a json data object, currently just dumps the json data to a string
 	# TODO: decide how to handle the data
 	def to_json(self):
 		output = json.dumps(self.data)
@@ -167,6 +176,7 @@ class Document:
 	def print(self):
 		print('DOCUMENT')
 		print('\tTITLE:', self.data['Title'])
+		# NOTE: removed because not this is not collected from every data publication/repo 
 		#print('\tTYPE:', doc.type)
 		print('\tSOURCE:', self.data['Source'])
 		print('\tKEYWORDS:', self.data['Keywords'])
@@ -174,3 +184,4 @@ class Document:
 		print('\tLINK:', self.data['Link'])
 		print('\tAUTHORS:', self.data['Authors'])
 		print('\tDOI:', self.data['DOI'])
+		print('\tDATE:', self.data['Date'])

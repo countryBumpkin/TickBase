@@ -61,7 +61,7 @@ class IKNB(Portal):
 		# check that result is good
 		if r.status_code == 200:
 			for item in response_list:
-				print('\t', item)
+				print('RAW DOC\n\t', item)
 				# convert to Document list
 				keys = item.keys()
 				title = ''

@@ -38,7 +38,7 @@ class IFigshare(Portal):
             r = requests.get(base_url + 'articles?search={}&itemType={}&page={}'.format(key, type, i))
 
             # verify success of request
-            if r.status_code is not 200:
+            if r.status_code != 200:
                 print('ERROR: status code failure')
                 continue
 
@@ -56,6 +56,7 @@ class IFigshare(Portal):
                                     source='figshare',
                                     link=item['url'],
                                     doi=item['doi'],
+                                    date=item['published_date'],
                                     datatype=item['defined_type_name'])
 
                     results.append(file)

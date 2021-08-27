@@ -71,7 +71,7 @@ class ISpringer(Portal):
             if r.status_code < 400:
                 # parse results and store in list
                 r_json = r.json()
-                print(type(r_json))
+                print('RAW DOC\n\t', r_json, '\n\t', type(r_json))
                 json_resultsf = r_json['result']
                 first_elem = json_resultsf[0]
                 num_docs = first_elem['recordsDisplayed']
@@ -80,10 +80,9 @@ class ISpringer(Portal):
                 records = r_json['records']
 
                 for item in records:
-                    if content_filter is not 'None' and content_filter != item['contentType']:
-                        docs.append(self.__convert_to_Document__(item))
-                    else:
-                        docs.append(self.__convert_to_Document__(item))
+                    #if content_filter is not 'None' and content_filter != item['contentType']:
+                    print('RAW DOC\n\t', item)
+                    docs.append(self.__convert_to_Document__(item))
 
             else:
                 print('page not found')

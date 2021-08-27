@@ -1,9 +1,9 @@
 import requests
 import json
 
-
 '''
-	Resolves DOIs for the user and prints/returns the metadata attached to the DOI.
+	Resolves DOIs for the user and prints/returns the metadata attached to the DOI. Also parses out the
+	metadata from complicated fields (authors, date of creation)
 
 	DOI: digital object identifier, a unified system for identifying journal articles and providing stable access to them through a single standard system. Protects against changes to where the material is published.
 
@@ -22,6 +22,9 @@ class DOIResolver:
 		#print('author_list:\n\t', author_list)
 		author_string = ''
 		num = 0
+
+		# iterate through list and convert to string with format
+		# first last, first last, etc
 		for author in author_list:
 			if num == 0:
 				if 'given' in author.keys():

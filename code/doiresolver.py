@@ -53,9 +53,12 @@ class DOIResolver:
 			'timestamp': 1579584123000}, 'score': 1.0, 'subtitle': [], 'short-title': [], 'issued': {'date-parts': [[None]]}, 'references-count': 0, 'URL': 'http://dx.doi.org/10.3389/fcimb.2019.00477.s001', 'relation': {}} 
 	'''
 	def get_date(self, meta):
+		if meta == {}:
+			return None
 			
+		# check common keys used for this information
 		if 'issued' in meta.keys():
-			meta = meta['deposited']
+			meta = meta['issued']
 		elif 'created' in meta.keys():
 			meta = meta['created']
 		elif 'deposited' in meta.keys():
@@ -79,7 +82,7 @@ class DOIResolver:
 			i = i + 1
 
 		date = month + day + year
-		print('RAW\n\t\t', raw, '\nDATE\n\t\t', date)
+		#print('RAW\n\t\t', raw, '\nDATE\n\t\t', date)
 		return date
 
 

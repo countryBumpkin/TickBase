@@ -33,7 +33,7 @@ class IPubMed(Portal):
             for id in record_XML['IdList']:
                 handle = Entrez.esummary(db="pubmed", id=id)
                 record = Entrez.read(handle)
-                #print(record)
+                print('RAW DOC\n\t',record[0])
 
                 #print('DOCUMENT \nTitle: {}'.format(record[0][key_list[1]]))
 
@@ -55,7 +55,7 @@ class IPubMed(Portal):
                                                                                                                     infoDict['DOI']))
 
                 # put in document
-                doc = Document(title=infoDict['Title'], authors=infoDict['AuthorList'], source=infoDict['Source'], doi=infoDict['DOI'], datatype='unkown')
+                doc = Document(title=infoDict['Title'], authors=infoDict['AuthorList'], source=infoDict['Source'], date=infoDict['EPubDate'], doi=infoDict['DOI'], datatype='unkown')
                 results.append(doc)
 
             return results

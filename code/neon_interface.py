@@ -25,13 +25,19 @@ class INeon(Portal):
 
         # iterate through all key-value pairs in dictionary and check for keyword
         for dict_key in keys:
+            match_ratio = 0
+            if isinstance(dict_item[dict_key], str):
+                match_ratio = fuzz.partial_ratio(key, dict_item[dict_key])
+
+            print('\n\tmatch_ratio:', match_ratio)
+
             # check iterable types for the key
-            if isinstance(dict_item[dict_key], String) and fuzz.ratio(key, dict_item[dict_key]) > 90:
-                print('ITEM CONTAINS KEY: \'', key, '\'')
+            if match_ratio >= 85:
+                print('ITEM CONTAINS KEY: \'', key, '\'', '\n\t', dict_item[dict_key])
                 return True
-                
+
             else:
-                print('CAN\'T CHECK DATA:', dict_item[dict_key])
+                print(type(dict_item[dict_key]), 'DOESN\'T CONTAIN KEY:\n\t', key, '\n\t', dict_item[dict_key])
 
         return False
 

@@ -54,8 +54,16 @@ class IPubMed(Portal):
                                                                                                                     infoDict['AuthorList'],
                                                                                                                     infoDict['DOI']))
 
+                epubd = ''
+                if 'EPubDate' in key_list:
+                    epubd = infoDict['EPubDate']
+                elif 'PubDate' in key_list:
+                    epubd = infoDict['PubDate']                                                                                                    
+
                 # put in document
-                doc = Document(title=infoDict['Title'], authors=infoDict['AuthorList'], source=infoDict['Source'], date=infoDict['EPubDate'], doi=infoDict['DOI'], datatype='unkown')
+                doc = Document(title=infoDict['Title'], authors=infoDict['AuthorList'], 
+                                source=infoDict['Source'], date=epubd, 
+                                doi=infoDict['DOI'], datatype='unkown')
                 results.append(doc)
 
             return results

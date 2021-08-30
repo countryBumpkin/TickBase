@@ -3,18 +3,7 @@ from briefcase import Document
 import requests
 from portal_interface import Portal
 import xml.etree.ElementTree as ET
-#print(dir(d1_client.util))
-'''
-c = d1_client.solr_client.SolrConnection()
 
-search_result = c.search({
-  'q': 'id:[* TO *]', # Filter for search
-  'rows': 10, # Number of results to return
-  'fl': 'formatId', # List of fields to return for each result
-})
-
-pprint.pprint(search_result)
-'''
 class ILTER(Portal):
 
     def __init__(self):
@@ -38,21 +27,42 @@ class ILTER(Portal):
             docs = []
 
             root = ET.fromstring(r.text)
-            print('\tXML:\n\t\t', r.text)
+            print('RAW XML:\n\t\t', r.text)
             print('\t\tattributes:', root.attrib)
 
-            # iterate over each document returned by LTER
+            # iterate over each document returned by LTER and convert to briefcase document
             for child in root:
                 print('\t\tTAG:', child.tag)
                 print(child)
 
                 resDict = {}
+                grndchld_txt = ''
 
+                # parse meta from returned documents
                 for grandchild in child:
-                    print('\t\tgrandchild tag =', grandchild.tag, ' text =', grandchild.text)
-                    resDict[grandchild.tag] = grandchild.text
+                    if grandchild.tag == 'authors':
+                        grndchld_txt = ''
+                        author_count = 0
+                        # convert xml author tags to string "last, first; last, first"
+                        for name in grandchild:
+                            #print('\t\t\t', name.text)
+                            if author_count == 0:
+                                grndchld_txt = name.text
+                                author_count = author_count + 1
+                            else:
+                                grndchld_txt = grndchld_txt + '; ' + name.text
+                                author_count = author_count + 1
 
-                doc = Document(title=resDict['title'], authors=resDict['authors'], abstract=resDict['abstract'], doi=resDict['doi'], datatype='unkown')
+                        resDict[grandchild.tag] = grndchld_txt
+                        print('\t\tgrandchild tag =', grandchild.tag, ' text =', grndchld_txt)
+
+                    else:
+                        print('\t\tgrandchild tag =', grandchild.tag, ' text =', grandchild.text)
+                        resDict[grandchild.tag] = grandchild.text
+
+                doc = Document(title=resDict['title'], authors=grndchld_txt, 
+                                abstract=resDict['abstract'], doi=resDict['doi'], datatype='unkown')
+                #doc.print()
                 docs.append(doc)
 
             return docs

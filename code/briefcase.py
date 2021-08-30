@@ -181,7 +181,7 @@ class Document:
 		print('\tSOURCE:', self.data['Source'])
 		print('\tKEYWORDS:', self.data['Keywords'])
 		print('\tABSTRACT:', self.data['Abstract'])
-		print('\tLINK:', self.data['Link'])
+		#print('\tLINK:', self.data['Link'])
 		print('\tAUTHORS:', self.data['Authors'])
 		print('\tDOI:', self.data['DOI'])
 		print('\tDATE:', self.data['Date'])

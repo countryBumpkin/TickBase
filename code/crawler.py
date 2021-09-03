@@ -36,7 +36,7 @@ class Crawler:
     def __init__(self, repository_interface, csv_path='keys.csv'):
         self.interface = repository_interface
         self.url_briefcase = Briefcase()
-        with open(csv_path, newline='') as file:
+        with open(csv_path, newline='', encoding='utf-8-sig') as file:
             reader = csv.reader(file)
             res = list(reader)
 
@@ -289,7 +289,7 @@ class CrawlTester:
         folder.print()
 
 
-test = CrawlTester()
+#test = CrawlTester()
 #test.test_GScholar()
 #test.test_Mendeley()
 #test.test_MendeleyData()
@@ -299,5 +299,5 @@ test = CrawlTester()
 #test.test_SpringerNature()
 #test.test_Neon()
 #test.test_PubMed()
-test.test_LTER()
+#test.test_LTER()
 #test.test_briefcase()

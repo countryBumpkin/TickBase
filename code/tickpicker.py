@@ -24,145 +24,148 @@ from briefcase import Briefcase
 from doichecker import doichecker
 from dspace import DSpace
 
-# print menu of actions and functions supported
-def print_menu():
-	menu_str = 	'''
-	MENU
-		[0] run single query
-		[1] run query batch from .csv
-		[2] export collected data to DSpace
-	'''
+class CrawlerApp:
 
-	print(menu_str)
+	def __init__(self):
+		self.control_loop()
 
-# print an indexed list of all databases we support querying
-def print_database_menu():
-	menu_str = '''
-	DATABASES
-		[0]  Google Scholar
-		[1]  Mendeley
-		[2]  Mendeley Data
-		[3]  Figshare
-		[4]  Data Dryad
-		[5]  KNB
-		[6]  Springer Nature
-		[7]  Neon
-		[8]  PubMed
-		[9] LTER
-	'''
-	print(menu_str)
+	# print logo/title for this app and any pertinent information
+	def print_header(self):
+		header = 	    '          _____                    _____                    _____                    _____                    _____            _____                    _____          '\
+						'\n         /\\    \\                  /\\    \\                  /\\    \\                  /\\    \\                  /\\    \\          /\\    \\                  /\\    \\         '\
+						'\n        /::\\    \\                /::\\    \\                /::\\    \\                /::\\____\\                /::\\____\\        /::\\    \\                /::\\    \\        '\
+						'\n       /::::\\    \\              /::::\\    \\              /::::\\    \\              /:::/    /               /:::/    /       /::::\\    \\              /::::\\    \\       '\
+						'\n      /::::::\\    \\            /::::::\\    \\            /::::::\\    \\            /:::/   _/___            /:::/    /       /::::::\\    \\            /::::::\\    \\      '\
+						'\n     /:::/\\:::\\    \\          /:::/\\:::\\    \\          /:::/\\:::\\    \\          /:::/   /\\    \\          /:::/    /       /:::/\\:::\\    \\          /:::/\\:::\\    \\     '\
+						'\n    /:::/  \\:::\\    \\        /:::/__\\:::\\    \\        /:::/__\\:::\\    \\        /:::/   /::\\____\\        /:::/    /       /:::/__\\:::\\    \\        /:::/__\\:::\\    \\    '\
+						'\n   /:::/    \\:::\\    \\      /::::\\   \\:::\\    \\      /::::\\   \\:::\\    \\      /:::/   /:::/    /       /:::/    /       /::::\\   \\:::\\    \\      /::::\\   \\:::\\    \\   '\
+						'\n  /:::/    / \\:::\\    \\    /::::::\\   \\:::\\    \\    /::::::\\   \\:::\\    \\    /:::/   /:::/   _/___    /:::/    /       /::::::\\   \\:::\\    \\    /::::::\\   \\:::\\    \\  '\
+						'\n /:::/    /   \\:::\\    \\  /:::/\\:::\\   \\:::\\____\\  /:::/\\:::\\   \\:::\\    \\  /:::/___/:::/   /\\    \\  /:::/    /       /:::/\\:::\\   \\:::\\    \\  /:::/\\:::\\   \\:::\\____\\ '\
+						'\n/:::/____/     \\:::\\____\\/:::/  \\:::\\   \\:::|    |/:::/  \\:::\\   \\:::\\____\\|:::|   /:::/   /::\\____\\/:::/____/       /:::/__\\:::\\   \\:::\\____\\/:::/  \\:::\\   \\:::|    |'\
+						'\n\\:::\\    \\      \\::/    /\\::/   |::::\\  /:::|____|\\::/    \\:::\\  /:::/    /|:::|__/:::/   /:::/    /\\:::\\    \\       \\:::\\   \\:::\\   \\::/    /\\::/   |::::\\  /:::|____|'\
+						'\n \\:::\\    \\      \\/____/  \\/____|:::::\\/:::/    /  \\/____/ \\:::\\/:::/    /  \\:::\\/:::/   /:::/    /  \\:::\\    \\       \\:::\\   \\:::\\   \\/____/  \\/____|:::::\\/:::/    / '\
+						'\n  \\:::\\    \\                    |:::::::::/    /            \\::::::/    /    \\::::::/   /:::/    /    \\:::\\    \\       \\:::\\   \\:::\\    \\            |:::::::::/    /  '\
+						'\n   \\:::\\    \\                   |::|\\::::/    /              \\::::/    /      \\::::/___/:::/    /      \\:::\\    \\       \\:::\\   \\:::\\____\\           |::|\\::::/    /   '\
+						'\n    \\:::\\    \\                  |::| \\::/____/               /:::/    /        \\:::\\__/:::/    /        \\:::\\    \\       \\:::\\   \\::/    /           |::| \\::/____/    '\
+						'\n     \\:::\\    \\                 |::|  ~|                    /:::/    /          \\::::::::/    /          \\:::\\    \\       \\:::\\   \\/____/            |::|  ~|          '\
+						'\n      \\:::\\    \\                |::|   |                   /:::/    /            \\::::::/    /            \\:::\\    \\       \\:::\\    \\                |::|   |          '\
+						'\n       \\:::\\____\\               \\::|   |                  /:::/    /              \\::::/    /              \\:::\\____\\       \\:::\\____\\               \\::|   |          '\
+						'\n        \\::/    /                \\:|   |                  \\::/    /                \\::/____/                \\::/    /        \\::/    /                \\:|   |          '\
+						'\n         \\/____/                  \\|___|                   \\/____/                  ~~                       \\/____/          \\/____/                  \\|___|          '\
+				 		'\nby Garrett Wells for Tick Base 2021'
 
+		print(header)
 
-# search a database using crawler by passing in the database to search and the query to run
-def search(db=0, q='', csv_path=''):
+	# print menu of actions and functions supported
+	def print_menu(self):
+		function_list = ['run single query', 'run query batch from .csv', 'export collected data to DSpace']
 
-	inter = None
+		print('MENU')
 
-	if db == 0: # google scholar
-		inter = GScholar()
-
-	elif db == 1: # mendeley
-		inter = IMendely()
-
-	elif db == 2: # mendeley data
-		inter = IMendeley_Data()
-
-	elif db == 3: # figshare
-		inter = IFigshare()
-
-	elif db == 4: # data dryad
-		inter = IDataDryad()
-
-	elif db == 5: # knb
-		inter = IKNB()
-
-	elif db == 6: # springer nature
-		inter = ISpringer()
-
-	elif db == 7: # neon
-		inter = INeon()
-
-	elif db == 8: # pubmed
-		inter = IPubMed()
-
-	elif db == 9: # LTER
-		inter = ILTER()
-
-	else:
-		return
-
-	if csv_path != '':
-		print('search1')
-		a = Crawler(repository_interface=inter, csv_path=csv_path)
-		a.search_all()
-
-	else:
-		print('search2')
-		a = Crawler(repository_interface=inter, csv_path=query)
-		a.search_all()
+		i = 0
+		for fun_str in function_list:
+			print('[{}]\t{}'.format(i, fun_str))
+			i = i + 1
 
 
-'''
-	print menu to command line, take input, execute input for program
-'''
-def control_loop():
-	flag = True
+	# print an indexed list of all databases we support querying
+	def print_database_menu(self):
+		db_list = ['Google Scholar', 'Mendeley', 'Mendeley Data', 'Figshare', 'Data Dryad', 'KNB', 'Springer Nature', 'Neon', 'PubMed', 'LTER']
+		
+		print('DATABASES')
 
-	while(flag):
-		# print menu
-		print_menu()
-		# get/check menu choice
-		selection = input('EXECUTE: ')
+		i = 0
+		for db_str in db_list:
+			print('[{}]\t{}'.format(i, db_str))
+			i = i + 1
 
-		# validate input
-		if selection == 'q' or selection == 'quit' or selection == 'exit':
-			print('ending control loop')
+	# submit single keyword query to database
+	def query_single(self):
+		query = input('enter keyword for search: ')
+		# print list of databases
+		self.print_database_menu()
+		database = input('select database to search: ')
+		# run search
+		self.search(db=database, q=query)
+
+	# submit search csv to database to query
+	def query_multiple(self):
+		# print menu of known .csv files
+		filename = ''
+
+		try:
+			i = 0
+			csv_file_list = os.listdir('searches')
+			if csv_file_list == []:
+				print('OUTPUT: no search option, but \'searches\' folder present, try creating CSV of search terms in that folder')
+				return
+
+			for file in csv_file_list:
+				print('[{}] {}'.format(i, file))
+				i = i + 1
+
+			choice = input('choose CSV search file: ')
+			filename = 'searches/' + csv_file_list[int(choice)]
+
+		except:
+			print('OUTPUT: no directory of search CSV files currently, try making \'searches\' folder with csv of query terms')
 			return
 
-		elif int(selection) in range(10):
-			s_code = int(selection)
-
-			# execute chosen option
-			if s_code == 0: # run single query
-				query = input('enter keyword for search: ')
-				# print list of databases
-				print_database_menu()
-				database = input('select database to search: ')
-				# run search
-				search(db=database, q=query)
-
-			elif s_code == 1: # run batch of queries
-				# print menu of known .csv files
-				filename = ''
-
-				try:
-					i = 0
-					csv_file_list = os.listdir('searches')
-					if csv_file_list == []:
-						print('OUTPUT: no search option, but \'searches\' folder present, try creating CSV of search terms in that folder')
-						return
-
-					for file in csv_file_list:
-						print('[{}] {}'.format(i, file))
-						i = i + 1
-
-					choice = input('choose CSV search file: ')
-					filename = 'searches/' + csv_file_list[int(choice)]
-
-				except:
-					print('OUTPUT: no directory of search CSV files currently, try making \'searches\' folder with csv of query terms')
-					return
-
-				# choose database
-				print_database_menu()
-				choice = input('choose database: ')
-				search(db=choice, csv_path=filename)
+		# choose database
+		self.print_database_menu()
+		choice = input('choose database: ')
+		self.search(db=choice, csv_path=filename)
 
 
-			elif s_code == 2: # export pre-collected data to dspace
-				print('implement option 2')
+	# search a database using crawler by passing in the database to search and the query to run
+	def search(self, db=0, q='', csv_path=''):
+		# interface object references
+		interface_list = [GScholar, IMendeley, IMendeley_Data, IFigshare, IDataDryad, IKNB, ISpringer, INeon, IPubMed, ILTER]
+
+		# verify user choice is in list -> create instance of interface
+		inter = None
+		if db in range(len(interface_list)):
+			inter = interface_list[db]()
+		else:
+			return
+
+		if csv_path != '':
+			print('search1')
+			a = Crawler(repository_interface=inter, csv_path=csv_path)
+			a.search_all()
+
+		else:
+			print('search2')
+			a = Crawler(repository_interface=inter, csv_path=query)
+			a.search_all()
+
+
+	'''
+		print menu to command line, take input, execute input for program
+	'''
+	def control_loop(self):
+
+		function_list = [query_single, query_multiple]
+		self.print_header()
+
+		flag = True
+
+		while(flag):
+			# print menu
+			self.print_menu()
+			# get/check menu choice
+			selection = input('EXECUTE: ')
+
+			# validate input
+			if selection == 'q' or selection == 'quit' or selection == 'exit':
+				print('ending control loop')
+				return
+
+			elif int(selection) in range(function_list):
+				s_code = int(selection)
+				function_list[s_code]() # run selected function
 				# TODO: print list of possible .csv data files to export
 				# TODO: get input to choose data file to export
 				# TODO: read file and export to dspace!!!
 
-control_loop()
+CrawlerApp()

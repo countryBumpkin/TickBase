@@ -42,14 +42,19 @@ class IMendeley(Portal):
         catalog_search = self.session.catalog.search(key)
         # Document list
         results = []
+
         for doc in catalog_search.iter():
+            doi = ''
+            if 'doi' in doc.identifiers.keys():
+                doi = doc.identifiers['doi']
+
             print('RAW DOC\n\t', doc)
-            print('DOC\n\t', doc.id, doc.identifiers['doi'])
+            print('DOC\n\t', doc.id, doi)
             auth_list = self._get_authors(doc.authors)
             print('AUTHORS:\n\t', auth_list)
             file = Document(title=doc.title, source=doc.source, link=doc.link, 
                 abstract=doc.abstract, authors=auth_list, datatype=doc.type, 
-                date=doc.year, keywords=doc.keywords, doi=doc.identifiers['doi'])
+                date=doc.year, keywords=doc.keywords, doi=doi)
             results.append(file)
             file.print()
 

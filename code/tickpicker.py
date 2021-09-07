@@ -52,6 +52,7 @@ class CrawlerApp:
 						'\n       \\:::\\____\\               \\::|   |                  /:::/    /              \\::::/    /              \\:::\\____\\       \\:::\\____\\               \\::|   |          '\
 						'\n        \\::/    /                \\:|   |                  \\::/    /                \\::/____/                \\::/    /        \\::/    /                \\:|   |          '\
 						'\n         \\/____/                  \\|___|                   \\/____/                  ~~                       \\/____/          \\/____/                  \\|___|          '\
+				 		'\nCRAWLER: a scientific database search program'\
 				 		'\nby Garrett Wells for Tick Base 2021'
 
 		print(header)
@@ -81,15 +82,17 @@ class CrawlerApp:
 
 	# submit single keyword query to database
 	def query_single(self):
+		print('running single query')
 		query = input('enter keyword for search: ')
 		# print list of databases
 		self.print_database_menu()
 		database = input('select database to search: ')
 		# run search
-		self.search(db=database, q=query)
+		self.search(db=int(database), q=query)
 
 	# submit search csv to database to query
 	def query_multiple(self):
+		print('running multiple query')
 		# print menu of known .csv files
 		filename = ''
 
@@ -119,25 +122,32 @@ class CrawlerApp:
 
 	# search a database using crawler by passing in the database to search and the query to run
 	def search(self, db=0, q='', csv_path=''):
+		print('searching database', db, 'for', q, 'or using', csv_path)
 		# interface object references
 		interface_list = [GScholar, IMendeley, IMendeley_Data, IFigshare, IDataDryad, IKNB, ISpringer, INeon, IPubMed, ILTER]
 
 		# verify user choice is in list -> create instance of interface
 		inter = None
-		if db in range(len(interface_list)):
-			inter = interface_list[db]()
+		if int(db) in range(len(interface_list)):
+			inter = interface_list[int(db)]()
 		else:
+			print('invalid db choice')
+			print('\tdb =', db, '/', range(len(interface_list)))
 			return
 
-		if csv_path != '':
-			print('search1')
-			a = Crawler(repository_interface=inter, csv_path=csv_path)
-			a.search_all()
+		# gracefully exits from failure and allows continued execution
+		try:
+			if csv_path != '':
+					a = Crawler(repository_interface=inter, csv_path=csv_path)
+					a.search_all()
+			
+			else:
+				a = Crawler(repository_interface=inter, csv_path=query)
+				a.search_all()
 
-		else:
-			print('search2')
-			a = Crawler(repository_interface=inter, csv_path=query)
-			a.search_all()
+		except:
+			print('search of', interface_list[int(db)].__name__, 'failed for an unknown reason')
+
 
 
 	'''
@@ -145,7 +155,7 @@ class CrawlerApp:
 	'''
 	def control_loop(self):
 
-		function_list = [query_single, query_multiple]
+		function_list = [self.query_single, self.query_multiple]
 		self.print_header()
 
 		flag = True
@@ -161,7 +171,8 @@ class CrawlerApp:
 				print('ending control loop')
 				return
 
-			elif int(selection) in range(function_list):
+			elif int(selection) in range(len(function_list)):
+				print('valid selection, running')
 				s_code = int(selection)
 				function_list[s_code]() # run selected function
 				# TODO: print list of possible .csv data files to export

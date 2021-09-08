@@ -6,6 +6,7 @@
 	@date: 08-31-2021
 '''
 import os
+import csv
 
 from crawler import Crawler
 from gscholar_interface import GScholar
@@ -119,6 +120,31 @@ class CrawlerApp:
 		choice = input('choose database: ')
 		self.search(db=choice, csv_path=filename)
 
+	# parse a csv file and upload to dspace
+	def convert_csv_to_dspace(self):
+		# print list of possible .csv data files to export
+		print('CONVERTABLE CSVs:')
+		csv_list = []
+		try:
+			csv_list = os.listdir('data_dump')
+			i = 0
+			for csv_str in csv_list:
+				print('[{}]'.format(i), csv_str)
+				i = i + 1
+		except:
+			print('failed to find folder \'data_dump\' in the current working directory')
+			return
+		
+		# get input to choose data file to export
+		selection = input('choose CSV to export:')
+		# export to dspace
+		baseurl = input('site url:')
+		uname = input('username:')
+		passwd = input('password:')
+		dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
+		dspace.import_csv(selection)
+		
+
 
 	# search a database using crawler by passing in the database to search and the query to run
 	def search(self, db=0, q='', csv_path=''):
@@ -135,6 +161,7 @@ class CrawlerApp:
 			print('\tdb =', db, '/', range(len(interface_list)))
 			return
 
+		a = None
 		# gracefully exits from failure and allows continued execution
 		try:
 			if csv_path != '':
@@ -144,6 +171,34 @@ class CrawlerApp:
 			else:
 				a = Crawler(repository_interface=inter, csv_path=query)
 				a.search_all()
+
+			# export results to DSpace if desired
+			selection = input('EXPORT TO DSPACE?(Y\\N):')
+			if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
+				print('exporting...')
+				cid = ''
+
+				confirmed = False
+				while not confirmed:
+					cid = input('enter CID:')
+					print('CID Entered =', cid)
+					confirmation = input('confirm CID as correct?(Y\\N):')
+					if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
+						confirmed = True
+
+					else:
+						retry = input('try again?(Y\\N):')
+						if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
+							print('proceeding...')
+						else:
+							print('canceling operation.')
+							return
+
+				# TODO: add username and password entry
+				psswd = input('pasword:')
+				uname = input('username:')	
+				a.export_to_dspace(cid = int(cid), uname=uname, passwd=psswd)
+
 
 		except:
 			print('search of', interface_list[int(db)].__name__, 'failed for an unknown reason')
@@ -155,7 +210,7 @@ class CrawlerApp:
 	'''
 	def control_loop(self):
 
-		function_list = [self.query_single, self.query_multiple]
+		function_list = [self.query_single, self.query_multiple, self.convert_csv_to_dspace]
 		self.print_header()
 
 		flag = True
@@ -175,8 +230,9 @@ class CrawlerApp:
 				print('valid selection, running')
 				s_code = int(selection)
 				function_list[s_code]() # run selected function
-				# TODO: print list of possible .csv data files to export
-				# TODO: get input to choose data file to export
-				# TODO: read file and export to dspace!!!
+			else:
+				print('incoherent input: \'', selection, '\'')
+				
+
 
 CrawlerApp()

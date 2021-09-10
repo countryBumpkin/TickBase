@@ -143,6 +143,9 @@ class CrawlerApp:
 		passwd = input('password:')
 		dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
 		dspace.import_csv(selection)
+
+	# update doi checker with all known item DOIs from a collection
+	def update_doi_checker(self, cid='')
 		
 
 

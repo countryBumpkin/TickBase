@@ -12,6 +12,13 @@ class doichecker:
     def __init__(self):
         self.doi_list = []
 
+    # If running from a different machine without access to the master key of seen DOIs, supplement with list of database contents
+    def create_inheritance(self, doi_list):
+        for doi in doi_list:
+            # make sure doi not already known to prevent database bloat
+            if not self.duplicate(doi):
+                self.appenddoi(doi)
+
     # return true if a duplicate doi is passed in
     def duplicate(self, doi):
         duplicate = False
@@ -22,6 +29,7 @@ class doichecker:
             print('match found')
             duplicate = True
 
+        # add doi to inherited file of all previously seen DOIs
         self.appenddoi(doi)
         return duplicate
 

@@ -235,7 +235,7 @@ class CrawlTester:
     # test the mendeley interface with the crawler
     def test_Mendeley(self):
         gs = IMendeley()
-        a = Crawler(repository_interface=gs, csv_path="/mnt/c/Users/deepg/Documents/TickBase/searches/test_search.csv")
+        a = Crawler(repository_interface=gs, csv_path="searches/test_search.csv")
         a.search_all()
 
     # test the mendeley data portal interface with the crawler

@@ -7,6 +7,7 @@
 '''
 import os
 import csv
+import getpass
 
 from crawler import Crawler
 from gscholar_interface import GScholar
@@ -26,6 +27,10 @@ from doichecker import doichecker
 from dspace import DSpace
 
 class CrawlerApp:
+
+	# login credentials for DSpace
+	logged_in = False
+	login_cred = ()
 
 	def __init__(self):
 		self.control_loop()
@@ -80,6 +85,80 @@ class CrawlerApp:
 		for db_str in db_list:
 			print('[{}]\t{}'.format(i, db_str))
 			i = i + 1
+
+	# get a collection id from the user
+	def _get_cid(self):
+		cid = ''
+
+		# get collection id
+		confirmed = False
+		while not confirmed:
+			cid = input('enter CID:')
+			print('CID Entered =', cid)
+			confirmation = input('confirm CID as correct?(Y\\N):')
+			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
+				confirmed = True
+
+			else:
+				retry = input('try again?(Y\\N):')
+				if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
+					print('proceeding...')
+				else:
+					print('canceling operation.')
+					return None
+
+		return cid
+
+	# get base url, username, password and return as a tuple
+	def _get_login_credentials(self):
+		uname = ''
+		psswd = ''
+		baseurl = 'http://dspace-dev.nkn.uidaho.edu:8080'
+
+		# add username and password entry
+		confirmed = False
+		while not confirmed:
+			uname = input('username: ')
+			passwd = getpass.getpass(prompt='password: ', stream=None) 
+
+			confirmation = input('confirm username and password as correct?(Y\\N):')
+			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
+				confirmed = True
+
+			else:
+				retry = input('try again?(Y\\N):')
+				if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
+					print('proceeding...')
+				else:
+					print('canceling operation.')
+					return None
+
+		# Check if base url needs to change and change it if needed
+		print('BASE URL:', baseurl)
+		selection = input('Change base DSpace URL?(Y/N):')
+		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
+				confirmed = False 
+
+		while not confirmed:
+			baseurl = input('Change base DSpace URL?(Y/N)')
+
+			confirmation = input('confirm username and password as correct?(Y\\N):')
+			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
+				confirmed = True
+
+			else:
+				retry = input('try again?(Y\\N):')
+				if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
+					print('proceeding...')
+				else:
+					print('canceling operation.')
+					return None
+
+		logged_in = True
+		login_cred = (uname, passwd, baseurl)
+
+		return login_cred
+
 
 	# submit single keyword query to database
 	def query_single(self):
@@ -144,14 +223,39 @@ class CrawlerApp:
 		dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
 		dspace.import_csv(selection)
 
-	# update doi checker with all known item DOIs from a collection
-	def update_doi_checker(self, cid='')
-		
+	# update system doi checker with all known item DOIs from a collection
+	def update_doi_checker(self, cid=''):
+		# login to DSpace
+		uname, psswd, baseurl = self._get_login_credentials()
 
+		# get list of item objects in DSpace collection
+		dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
+		item_list = dspace.get_items(cid, False)
+
+		# parse DOIs from items
+		doi_list = []
+		for item in item_list:
+			# get doi from each item and place in a list
+			doi = dspace.get_item_metadata(item['uuid'])['dc.identifier']	
+			doi_list.append(doi)
+
+			print('\t', doi)
+
+		dchecker = doichecker()
+		dchecker.create_inheritance(doi_list)
 
 	# search a database using crawler by passing in the database to search and the query to run
 	def search(self, db=0, q='', csv_path=''):
-		print('searching database', db, 'for', q, 'or using', csv_path)
+		
+		# Check if this is a collection update operation
+		cid = ''
+		print('WARNING: If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
+		ans = input('Update DOI database?(Y/N):')
+		if ans == 'Y' or ans == 'y' or ans == 'yes' or ans == 'Yes':
+			cid = self._get_cid() # user enter cid
+			self.update_doi_checker(cid) # create file with all DOIs
+
+		#print('searching database', db, 'for', q, 'or using', csv_path)
 		# interface object references
 		interface_list = [GScholar, IMendeley, IMendeley_Data, IFigshare, IDataDryad, IKNB, ISpringer, INeon, IPubMed, ILTER]
 
@@ -160,51 +264,32 @@ class CrawlerApp:
 		if int(db) in range(len(interface_list)):
 			inter = interface_list[int(db)]()
 		else:
-			print('invalid db choice')
+			#print('invalid db choice')
 			print('\tdb =', db, '/', range(len(interface_list)))
 			return
 
 		a = None
 		# gracefully exits from failure and allows continued execution
-		try:
-			if csv_path != '':
-					a = Crawler(repository_interface=inter, csv_path=csv_path)
-					a.search_all()
-			
-			else:
-				a = Crawler(repository_interface=inter, csv_path=query)
-				a.search_all()
+		#try:
+		if csv_path != '':
+			a = Crawler(repository_interface=inter, csv_path=csv_path)
+			a.search_all()
+		
+		else:
+			a = Crawler(repository_interface=inter, csv_path='')
+			a.search(keywords=[q])
 
-			# export results to DSpace if desired
-			selection = input('EXPORT TO DSPACE?(Y\\N):')
-			if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
-				print('exporting...')
-				cid = ''
+		#except:
+			#print('WARNING: search of', interface_list[int(db)].__name__, 'failed for an unknown reason')
 
-				confirmed = False
-				while not confirmed:
-					cid = input('enter CID:')
-					print('CID Entered =', cid)
-					confirmation = input('confirm CID as correct?(Y\\N):')
-					if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
-						confirmed = True
-
-					else:
-						retry = input('try again?(Y\\N):')
-						if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
-							print('proceeding...')
-						else:
-							print('canceling operation.')
-							return
-
-				# TODO: add username and password entry
-				psswd = input('pasword:')
-				uname = input('username:')	
+		# export results to DSpace if desired
+		selection = input('EXPORT TO DSPACE?(Y\\N):')
+		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
+			if not logged_in:
+				uname, psswd, baseurl = self._get_login_credentials()
 				a.export_to_dspace(cid = int(cid), uname=uname, passwd=psswd)
-
-
-		except:
-			print('search of', interface_list[int(db)].__name__, 'failed for an unknown reason')
+			else:
+				a.export_to_dspace(cid=int(cid), uname=login_cred[0], passwd=login_cred[1])
 
 
 

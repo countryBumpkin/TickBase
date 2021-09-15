@@ -45,13 +45,13 @@ class IMendeley(Portal):
 
         for doc in catalog_search.iter():
             doi = ''
-            if 'doi' in doc.identifiers.keys():
+            if doc.identifiers != None and 'doi' in doc.identifiers.keys():
                 doi = doc.identifiers['doi']
 
             print('RAW DOC\n\t', doc)
             print('DOC\n\t', doc.id, doi)
             auth_list = self._get_authors(doc.authors)
-            print('AUTHORS:\n\t', auth_list)
+            print('AUTHORS:\n\t', auth_list.encode('utf-8'))
             file = Document(title=doc.title, source=doc.source, link=doc.link, 
                 abstract=doc.abstract, authors=auth_list, datatype=doc.type, 
                 date=doc.year, keywords=doc.keywords, doi=doi)

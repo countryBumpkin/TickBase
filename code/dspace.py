@@ -39,7 +39,7 @@ class DSpace:
     # attempt to authenticate, return true if successful
     def authenticate(self):
         #payload = 'email=garrettrwells%40gmail.com&password=GW091799'
-        payload='email={}&password={}'.format(self.username, self.passwd)
+        payload='email={}%40&password={}'.format(self.username, self.passwd)
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
             }
@@ -56,6 +56,7 @@ class DSpace:
             self.session_id = r.cookies
             print(r.cookies['JSESSIONID'])
             return True
+
 
 
     # log the current user out of the database

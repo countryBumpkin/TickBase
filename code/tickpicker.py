@@ -32,7 +32,11 @@ class CrawlerApp:
 	logged_in = False
 	login_cred = ()
 
+	# DSpace session stored from previous login
+	dsession = None
+
 	def __init__(self):
+		dsession = None
 		self.logged_in = False
 		self.control_loop()
 
@@ -108,6 +112,11 @@ class CrawlerApp:
 	# get base url, username, password and return as a tuple
 	def _get_login_credentials(self):
 		self.clear_screen()
+
+		# tell user what these credentials are for
+		print('ENTER LOGIN CREDENTIALS FOR DSPACE')
+		print('username: john.doe@gmail.com\npassword: john_is_not_a_doe\n')
+
 		uname = ''
 		psswd = ''
 		baseurl = 'http://dspace-dev.nkn.uidaho.edu:8080'
@@ -161,8 +170,28 @@ class CrawlerApp:
 
 	# control loop for managing data already in a collection
 	def manage_collection(self):
+
 		self.clear_screen()
-		cid = self._get_cid()
+		if not self.logged_in:
+			uname, psswd, baseurl = self._get_login_credentials()
+			try:
+				self.dsession = DSpace(username=uname, passwd=psswd, base_url=baseurl) 
+			except:
+				print('FAILED TO LOGIN')
+				return
+
+			self.logged_in = True
+
+		# print menu of collections available to modify
+		cid = ''
+		collections = self.dsession.get_collections(True)
+		i = 0
+		for collection in collections:
+			print('[{}] {}: {}'.format(i, collection['name'], collection['uuid']))
+
+		selection = int(input('SELECT COLLECTION: '))
+		if selection in range(0, len(collections)):
+			cid = collections[selection]['uuid']
 
 		menu = ['empty collection', 'print collection summary', 'get collection contents']
 
@@ -175,7 +204,17 @@ class CrawlerApp:
 		selection = int(selection)
 
 		if selection in range(0, len(menu)):
-			print('valid entry')
+	
+			if selection == 0:
+				print('EMPTYING COLLECTION')
+				self.dsession.empty_collection(cid)
+
+			elif selection == 1:
+				print('not implemented yet')
+
+			elif selection == 2:
+				print('not implemented yet')
+
 
 
 
@@ -237,11 +276,16 @@ class CrawlerApp:
 		# get input to choose data file to export
 		selection = input('choose CSV to export:')
 		# export to dspace
-		baseurl = input('site url:')
-		uname = input('username:')
-		passwd = input('password:')
-		dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
-		dspace.import_csv(selection)
+		if not self.logged_in:
+			uname, psswd, baseurl = self._get_login_credentials()
+			self.logged_in = True
+
+			dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
+			# save DSpace session
+			self.dsession = dspace
+
+
+		dsession.import_csv(selection)
 
 		# clear screen to signify end of process
 		self.clear_screen()
@@ -249,17 +293,20 @@ class CrawlerApp:
 	# update system doi checker with all known item DOIs from a collection
 	def update_doi_checker(self, cid=''):
 		# login to DSpace
-		uname, psswd, baseurl = self._get_login_credentials()
+		if not self.logged_in:
+			uname, psswd, baseurl = self._get_login_credentials()
+			dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
+			self.logged_in = True
+			self.dsession = dspace
 
 		# get list of item objects in DSpace collection
-		dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
-		item_list = dspace.get_items(cid, False)
+		item_list = dsession.get_items(cid, False)
 
 		# parse DOIs from items
 		doi_list = []
 		for item in item_list:
 			# get doi from each item and place in a list
-			doi = dspace.get_item_metadata(item['uuid'])['dc.identifier']	
+			doi = dsession.get_item_metadata(item['uuid'])['dc.identifier']	
 			doi_list.append(doi)
 
 			print('\t', doi)
@@ -269,14 +316,25 @@ class CrawlerApp:
 
 	# search a database using crawler by passing in the database to search and the query to run
 	def search(self, db=0, q='', csv_path=''):
-		
-		# Check if this is a collection update operation
-		cid = ''
-		print('WARNING: If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
-		ans = input('Update DOI database?(Y/N):')
-		if ans == 'Y' or ans == 'y' or ans == 'yes' or ans == 'Yes':
-			cid = self._get_cid() # user enter cid
-			self.update_doi_checker(cid) # create file with all DOIs
+		export_toDSpace = False
+
+		# export results to DSpace if desired
+		selection = input('EXPORT TO DSPACE?(Y\\N):')
+		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
+
+			# DOI conflict handling
+			cid = ''
+			print('WARNING: If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
+			ans = input('Update DOI database?(Y/N):')
+			if ans == 'Y' or ans == 'y' or ans == 'yes' or ans == 'Yes':
+				cid = self._get_cid() # user enter cid
+				self.update_doi_checker(cid) # create file with all DOIs
+
+			# ensure user logged in
+			if not self.logged_in:
+				uname, psswd, baseurl = self._get_login_credentials()
+				if cid == '': # make sure cid is defined
+					cid = self._get_cid()
 
 		#print('searching database', db, 'for', q, 'or using', csv_path)
 		# interface object references
@@ -301,20 +359,12 @@ class CrawlerApp:
 		else:
 			a = Crawler(repository_interface=inter, csv_path='')
 			a.search(keywords=[q])
-
-		#except:
-			#print('WARNING: search of', interface_list[int(db)].__name__, 'failed for an unknown reason')
-
-		# export results to DSpace if desired
-		selection = input('EXPORT TO DSPACE?(Y\\N):')
-		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
-			if not self.logged_in:
-				uname, psswd, baseurl = self._get_login_credentials()
-				if cid == '': # make sure cid is defined
-					cid = self._get_cid()
-				a.export_to_dspace(cid=cid, uname=uname, passwd=psswd)
-			else:
-				a.export_to_dspace(cid=cid, uname=login_cred[0], passwd=login_cred[1])
+		
+		# export to DSpace if flag is set
+		if export_toDSpace and self.logged_in:
+			a.export_to_dspace(cid=cid, uname=uname, passwd=psswd)
+		elif export_toDSpace:
+			a.export_to_dspace(cid=cid, uname=login_cred[0], passwd=login_cred[1])
 
 		# clear screen to signify end of process
 		self.clear_screen()
@@ -326,7 +376,7 @@ class CrawlerApp:
 	'''
 	def control_loop(self):
 
-		function_list = [self.query_single, self.query_multiple, self.convert_csv_to_dspace]
+		function_list = [self.query_single, self.query_multiple, self.convert_csv_to_dspace, self.manage_collection]
 		self.print_header()
 
 		flag = True

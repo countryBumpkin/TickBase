@@ -29,6 +29,7 @@ class Briefcase:
 		self.container.to_excel(filename, index=False)
 
 	def to_csv(self, filename='briefcase'):
+		print('exporting DATA from BRIEFCASE to CSV')
 		self.container.to_csv(filename, index=False)
 
 	# convert briefcase contents to a DuraSpace Simple Archive containing metadata in dublin core XML files

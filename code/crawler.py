@@ -6,6 +6,7 @@ import csv
 import json
 import datetime
 import pprint
+import time
 
 # libraries written for this project
     # interfaces
@@ -73,6 +74,11 @@ class Crawler:
                 #self.export_to_excel(key)
                 self.export_to_csv(key)
                 #self.export_to_batch(key)
+
+                # rate limiting for specific interfaces
+                if self.interface == IMendeley: # rate limit
+                    time.sleep(10.0) # delay execution 5 secs
+
 
         print('\tSUMMARY DICTIONARY:', final_list)
 

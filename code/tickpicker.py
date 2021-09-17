@@ -33,39 +33,35 @@ class CrawlerApp:
 	login_cred = ()
 
 	def __init__(self):
+		self.logged_in = False
 		self.control_loop()
 
 	# print logo/title for this app and any pertinent information
 	def print_header(self):
-		header = 	    '          _____                    _____                    _____                    _____                    _____            _____                    _____          '\
-						'\n         /\\    \\                  /\\    \\                  /\\    \\                  /\\    \\                  /\\    \\          /\\    \\                  /\\    \\         '\
-						'\n        /::\\    \\                /::\\    \\                /::\\    \\                /::\\____\\                /::\\____\\        /::\\    \\                /::\\    \\        '\
-						'\n       /::::\\    \\              /::::\\    \\              /::::\\    \\              /:::/    /               /:::/    /       /::::\\    \\              /::::\\    \\       '\
-						'\n      /::::::\\    \\            /::::::\\    \\            /::::::\\    \\            /:::/   _/___            /:::/    /       /::::::\\    \\            /::::::\\    \\      '\
-						'\n     /:::/\\:::\\    \\          /:::/\\:::\\    \\          /:::/\\:::\\    \\          /:::/   /\\    \\          /:::/    /       /:::/\\:::\\    \\          /:::/\\:::\\    \\     '\
-						'\n    /:::/  \\:::\\    \\        /:::/__\\:::\\    \\        /:::/__\\:::\\    \\        /:::/   /::\\____\\        /:::/    /       /:::/__\\:::\\    \\        /:::/__\\:::\\    \\    '\
-						'\n   /:::/    \\:::\\    \\      /::::\\   \\:::\\    \\      /::::\\   \\:::\\    \\      /:::/   /:::/    /       /:::/    /       /::::\\   \\:::\\    \\      /::::\\   \\:::\\    \\   '\
-						'\n  /:::/    / \\:::\\    \\    /::::::\\   \\:::\\    \\    /::::::\\   \\:::\\    \\    /:::/   /:::/   _/___    /:::/    /       /::::::\\   \\:::\\    \\    /::::::\\   \\:::\\    \\  '\
-						'\n /:::/    /   \\:::\\    \\  /:::/\\:::\\   \\:::\\____\\  /:::/\\:::\\   \\:::\\    \\  /:::/___/:::/   /\\    \\  /:::/    /       /:::/\\:::\\   \\:::\\    \\  /:::/\\:::\\   \\:::\\____\\ '\
-						'\n/:::/____/     \\:::\\____\\/:::/  \\:::\\   \\:::|    |/:::/  \\:::\\   \\:::\\____\\|:::|   /:::/   /::\\____\\/:::/____/       /:::/__\\:::\\   \\:::\\____\\/:::/  \\:::\\   \\:::|    |'\
-						'\n\\:::\\    \\      \\::/    /\\::/   |::::\\  /:::|____|\\::/    \\:::\\  /:::/    /|:::|__/:::/   /:::/    /\\:::\\    \\       \\:::\\   \\:::\\   \\::/    /\\::/   |::::\\  /:::|____|'\
-						'\n \\:::\\    \\      \\/____/  \\/____|:::::\\/:::/    /  \\/____/ \\:::\\/:::/    /  \\:::\\/:::/   /:::/    /  \\:::\\    \\       \\:::\\   \\:::\\   \\/____/  \\/____|:::::\\/:::/    / '\
-						'\n  \\:::\\    \\                    |:::::::::/    /            \\::::::/    /    \\::::::/   /:::/    /    \\:::\\    \\       \\:::\\   \\:::\\    \\            |:::::::::/    /  '\
-						'\n   \\:::\\    \\                   |::|\\::::/    /              \\::::/    /      \\::::/___/:::/    /      \\:::\\    \\       \\:::\\   \\:::\\____\\           |::|\\::::/    /   '\
-						'\n    \\:::\\    \\                  |::| \\::/____/               /:::/    /        \\:::\\__/:::/    /        \\:::\\    \\       \\:::\\   \\::/    /           |::| \\::/____/    '\
-						'\n     \\:::\\    \\                 |::|  ~|                    /:::/    /          \\::::::::/    /          \\:::\\    \\       \\:::\\   \\/____/            |::|  ~|          '\
-						'\n      \\:::\\    \\                |::|   |                   /:::/    /            \\::::::/    /            \\:::\\    \\       \\:::\\    \\                |::|   |          '\
-						'\n       \\:::\\____\\               \\::|   |                  /:::/    /              \\::::/    /              \\:::\\____\\       \\:::\\____\\               \\::|   |          '\
-						'\n        \\::/    /                \\:|   |                  \\::/    /                \\::/____/                \\::/    /        \\::/    /                \\:|   |          '\
-						'\n         \\/____/                  \\|___|                   \\/____/                  ~~                       \\/____/          \\/____/                  \\|___|          '\
+		self.clear_screen()
+
+		header = 	    "_________                         .__                  \n"\
+						"\_   ___ \_______ _____  __  _  __|  |   ____   ______  \n"\
+						"/    \  \/\_  __ \__   \ \ \/ \/ /|  |  / __ \_  __   \ \n"\
+						"\     \____|  | \/ / __ \_\     / |  |__\  ___/ |  | \/ \n"\
+						" \______  /|__|   (____  / \/\_/  |____/ \___  >|__|    \n"\
+						"        \/             \/                    \/         \n"\
 				 		'\nCRAWLER: a scientific database search program'\
 				 		'\nby Garrett Wells for Tick Base 2021'
 
 		print(header)
 
+	# clear screen with newline characters
+	def clear_screen(self):
+		tsize = os.get_terminal_size()
+		print(tsize)
+
+		for i in range(0, tsize[1]):
+			print('\n')
+
 	# print menu of actions and functions supported
 	def print_menu(self):
-		function_list = ['run single query', 'run query batch from .csv', 'export collected data to DSpace']
+		function_list = ['run single query', 'run query batch from .csv', 'export collected data to DSpace', 'manage collection']
 
 		print('MENU')
 
@@ -111,6 +107,7 @@ class CrawlerApp:
 
 	# get base url, username, password and return as a tuple
 	def _get_login_credentials(self):
+		self.clear_screen()
 		uname = ''
 		psswd = ''
 		baseurl = 'http://dspace-dev.nkn.uidaho.edu:8080'
@@ -154,10 +151,33 @@ class CrawlerApp:
 					print('canceling operation.')
 					return None
 
-		logged_in = True
+		self.logged_in = True
 		login_cred = (uname, passwd, baseurl)
 
 		return login_cred
+
+		# clear to signify end of process
+		self.clear_screen()
+
+	# control loop for managing data already in a collection
+	def manage_collection(self):
+		self.clear_screen()
+		cid = self._get_cid()
+
+		menu = ['empty collection', 'print collection summary', 'get collection contents']
+
+		i = 0
+		for item in menu:
+			print('[', i, '] ', item, sep='')
+			i = i + 1
+
+		selection = input("EXECUTE:")
+		selection = int(selection)
+
+		if selection in range(0, len(menu)):
+			print('valid entry')
+
+
 
 
 	# submit single keyword query to database
@@ -223,6 +243,9 @@ class CrawlerApp:
 		dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
 		dspace.import_csv(selection)
 
+		# clear screen to signify end of process
+		self.clear_screen()
+
 	# update system doi checker with all known item DOIs from a collection
 	def update_doi_checker(self, cid=''):
 		# login to DSpace
@@ -285,11 +308,16 @@ class CrawlerApp:
 		# export results to DSpace if desired
 		selection = input('EXPORT TO DSPACE?(Y\\N):')
 		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
-			if not logged_in:
+			if not self.logged_in:
 				uname, psswd, baseurl = self._get_login_credentials()
-				a.export_to_dspace(cid = int(cid), uname=uname, passwd=psswd)
+				if cid == '': # make sure cid is defined
+					cid = self._get_cid()
+				a.export_to_dspace(cid=cid, uname=uname, passwd=psswd)
 			else:
-				a.export_to_dspace(cid=int(cid), uname=login_cred[0], passwd=login_cred[1])
+				a.export_to_dspace(cid=cid, uname=login_cred[0], passwd=login_cred[1])
+
+		# clear screen to signify end of process
+		self.clear_screen()
 
 
 

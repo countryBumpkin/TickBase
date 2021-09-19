@@ -185,6 +185,7 @@ class CrawlerApp:
 		# print menu of collections available to modify
 		cid = ''
 		collections = self.dsession.get_collections(True)
+		print(collections)
 		i = 0
 		for collection in collections:
 			print('[{}] {}: {}'.format(i, collection['name'], collection['uuid']))

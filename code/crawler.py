@@ -75,9 +75,7 @@ class Crawler:
                 self.export_to_csv(key)
                 #self.export_to_batch(key)
 
-                # rate limiting for specific interfaces
-                if self.interface == IMendeley: # rate limit
-                    time.sleep(10.0) # delay execution 5 secs
+                time.sleep(120.0) # delay execution 2min
 
 
         print('\tSUMMARY DICTIONARY:', final_list)

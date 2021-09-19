@@ -48,7 +48,7 @@ class DSpace:
 
         if r.status_code != 200:
             print(self.base_url+'/login')
-            raise Exception('failed authentication, HTTP code ' + str(r.status_code))
+            #raise Exception('failed authentication, HTTP code ' + str(r.status_code))
             return False
         else:
             print('successful authentication, HTTP code ', r.status_code)
@@ -168,7 +168,7 @@ class DSpace:
                 print('COLLECTION \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
-        return collections
+        return collections[0]
 
 
     # Get an array of all the items in the repository

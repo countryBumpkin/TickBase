@@ -498,8 +498,8 @@ class DSpace:
         with open(filepath, 'r') as csv_file:
             r = csv.reader(csv_file)
             for row in r:
-                doc = Document(title=row[6], 
-                    authors=row[1], link=row[6], abstract=row[0], 
+                doc = Document(title=row[7], 
+                    authors=row[1], link='', abstract=row[0], 
                     source=row[6], keywords=row[5], doi=row[2], datatype=row[3], date=row[4])
                 
                 case.add(doc.to_dictionary())

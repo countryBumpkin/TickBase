@@ -296,7 +296,7 @@ class CrawlerApp:
 				case.export_to_dspace(cid=cid, dspace=self.dsession)
 
 		else:		
-			case = self.dsession.export_to_Briefcase(csv[selection-1])
+			case = self.dsession.export_to_Briefcase("data_dump/" + csv_list[selection-1])
 			case.export_to_dspace(cid=cid, dspace=self.dsession)
 
 		# clear screen to signify end of process

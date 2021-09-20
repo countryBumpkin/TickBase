@@ -5,6 +5,8 @@ import requests
 import warnings
 from bs4 import BeautifulSoup
 from doiresolver import DOIResolver
+from briefcase import Briefcase
+from briefcase import Document
 
 # Class provides API for DuraSpace development
 class DSpace:
@@ -39,7 +41,7 @@ class DSpace:
     # attempt to authenticate, return true if successful
     def authenticate(self):
         #payload = 'email=garrettrwells%40gmail.com&password=GW091799'
-        payload='email={}%40&password={}'.format(self.username, self.passwd)
+        payload='email={}&password={}'.format(self.username, self.passwd)
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
             }
@@ -402,7 +404,10 @@ class DSpace:
     def create_item(self, cid, title, author, description, doi):
         dres = DOIResolver()
         if doi != '':
-            sup_meta = dres.get_meta(doi)
+            try:
+                sup_meta = dres.get_meta(doi)
+            except:
+                sup_meta = {}
         else:
             sup_meta = {}
 
@@ -444,6 +449,7 @@ class DSpace:
                 )
 
         # construct headers with session id(authentication key) and submit request
+        print('Session ID', self.session_id)
         headers = {
             'Authorization': 'Bearer 999C94C5A92473D707225B890C08C398',
             'Content-Type': 'application/json',
@@ -482,12 +488,20 @@ class DSpace:
 
         TODO: decide whether this is a helpful feature or not 
     '''
-    def import_csv(self, filepath):
+    def export_to_Briefcase(self, filepath):
         # list of XML objects formatted as dspace 'items' to add to the repository
         items = []
+
+        case = Briefcase()
 
         # currently just prints out the key word
         with open(filepath, 'r') as csv_file:
             r = csv.reader(csv_file)
             for row in r:
-                print(row[1])
+                doc = Document(title=row[6], 
+                    authors=row[1], link=row[6], abstract=row[0], 
+                    source=row[6], keywords=row[5], doi=row[2], datatype=row[3], date=row[4])
+                
+                case.add(doc.to_dictionary())
+
+        return case

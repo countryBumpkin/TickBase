@@ -218,8 +218,6 @@ class CrawlerApp:
 
 
 
-
-
 	# submit single keyword query to database
 	def query_single(self):
 		print('running single query')
@@ -265,8 +263,9 @@ class CrawlerApp:
 		print('CONVERTABLE CSVs:')
 		csv_list = []
 		try:
+			print('[0] upload all CSVs')
 			csv_list = os.listdir('data_dump')
-			i = 0
+			i = 1
 			for csv_str in csv_list:
 				print('[{}]'.format(i), csv_str)
 				i = i + 1
@@ -275,18 +274,30 @@ class CrawlerApp:
 			return
 		
 		# get input to choose data file to export
-		selection = input('choose CSV to export:')
+		selection = int(input('choose CSV to export:'))
+
+		cid = self._get_cid()
+
 		# export to dspace
 		if not self.logged_in:
 			uname, psswd, baseurl = self._get_login_credentials()
 			self.logged_in = True
 
-			dspace = DSpace(username=uname, passwd=passwd, base_url=baseurl)
+			dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
+			success = dspace.authenticate()
+			if not success: 
+				print("ERROR in login")
 			# save DSpace session
 			self.dsession = dspace
 
+		if selection == 0:
+			for csv in csv_list:
+				case = self.dsession.export_to_Briefcase("data_dump/" + csv)
+				case.export_to_dspace(cid=cid, dspace=self.dsession)
 
-		dsession.import_csv(selection)
+		else:		
+			case = self.dsession.export_to_Briefcase(csv[selection-1])
+			case.export_to_dspace(cid=cid, dspace=self.dsession)
 
 		# clear screen to signify end of process
 		self.clear_screen()
@@ -297,6 +308,10 @@ class CrawlerApp:
 		if not self.logged_in:
 			uname, psswd, baseurl = self._get_login_credentials()
 			dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
+			success = dspace.authenticate()
+			if not success:
+				print("ERROR in login")
+
 			self.logged_in = True
 			self.dsession = dspace
 
@@ -322,7 +337,7 @@ class CrawlerApp:
 		# export results to DSpace if desired
 		selection = input('EXPORT TO DSPACE?(Y\\N):')
 		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
-
+			export_toDSpace = True
 			# DOI conflict handling
 			cid = ''
 			print('WARNING: If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')

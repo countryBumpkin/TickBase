@@ -61,5 +61,5 @@ class doichecker:
         # append to fast access list
         self.doi_list.append(doi)
         # append to file list
-        with open('doilist.csv', 'w') as file:
+        with open('doilist.csv', 'a') as file:
             file.write(doi + ',\n')

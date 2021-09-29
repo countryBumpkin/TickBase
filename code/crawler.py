@@ -37,12 +37,12 @@ class Crawler:
     def __init__(self, repository_interface, csv_path='keys.csv'):
         self.interface = repository_interface
         self.url_briefcase = Briefcase()
-        with open(csv_path, newline='', encoding='utf-8-sig') as file:
-            reader = csv.reader(file)
-            res = list(reader)
-
-        self.search_keys = res
-        print(res)
+        if csv_path != '':
+            with open(csv_path, newline='', encoding='utf-8-sig') as file:
+                reader = csv.reader(file)
+                res = list(reader)
+            self.search_keys = res
+            print(res)
 
 
     # returns a tuple containing a dictionary of sources found by search,
@@ -181,7 +181,7 @@ class Crawler:
             except PermissionError:
                 print('ERROR: can\'t save to specified path, close excel/notepad notebook currently displaying %s first' %name)
 
-    
+
     # Export metadata to DuraSpace archive
     # preferred submission method to any DSpace collection archive
     def export_to_dspace(self, cid='', uname='', passwd='', base_url=''):

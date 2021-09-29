@@ -26,17 +26,17 @@ class TestDSpace(unittest.TestCase):
     def print_menu(self):
         menu = '''
                 press q to quit...
-                TEST FUNCTIONS 
+                TEST FUNCTIONS
                         [1]  test authentication
-                        [2]  test crawler integration 
-                        [3]  test single item creation 
-                        [4]  test single item update  
-                        [5]  test update all items  
+                        [2]  test crawler integration
+                        [3]  test single item creation
+                        [4]  test single item update
+                        [5]  test update all items
                         [6]  test get single item
-                        [7]  test get all items in collection  
-                        [8]  test get delete all items in collection  
+                        [7]  test get all items in collection
+                        [8]  test get delete all items in collection
                         [9]  test get metadata for single item
-                        [10] test all 
+                        [10] test all
                 '''
 
         print(menu)
@@ -117,7 +117,7 @@ class TestDSpace(unittest.TestCase):
         dspc.authenticate()
         dspc.update_items(cids=['67720a66-6412-4f76-8f18-80d516633cee'])
         return 1
-        
+
 
     # test getting a single item from dspace
     def test_get_item(self):

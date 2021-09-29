@@ -11,6 +11,23 @@ class IDataDryad(Portal):
         self.tag = 'data_dryad'
         self.result_type = 'data'
 
+    # converting the author objects to a string of names
+    def _get_authors(self, dict_arr):
+        author_str = ''
+        count = 0
+
+        for author in dict_arr:
+            if count == 0:
+                author_str = author['firstName'] + ' ' + author['lastName']
+
+            elif count >= 0:
+                author_str = author_str + ', ' + author['firstName'] + ' ' + author['lastName']
+
+            print(author)
+            count = count + 1
+
+        return author_str
+
     def query(self, key='', type='dataset'):
         self.base_url = 'https://datadryad.org/api/v2'
         results = []
@@ -33,19 +50,24 @@ class IDataDryad(Portal):
                 print('page #{}, count={}'.format(i, count))
 
                 embedded = json_out['_embedded']
+                authors = ''
 
                 for item in embedded['stash:datasets']:
+                    if 'authors' in item.keys():
+                        authors = self._get_authors(item['authors'])
+                    else:
+                        authors = ''
                     pprint.pprint(item)
                     try:
                         file = Document(title=item['title'],
-                                        authors=item['authors'],
+                                        authors= authors,
                                         link='https://default_link',
                                         abstract=item['abstract'],
                                         source='',
                                         doi=item['identifier'],
                                         date=item['publicationDate'],
                                         datatype=type)
-                                        
+
                         results.append(file)
                     except:
                         print('ERROR adding doc failed')

@@ -9,12 +9,20 @@ class doichecker:
     doi_dict = {}
 
     def __init__(self):
-        self.doi_dict = {}
+        self.doi_dict = {} # TODO: fill this with DOIs in file to minimize slowdown
         try:
             file = open('doilist.csv', 'x')
             file.close()
         except:
-            print('doi csv list file already exists')
+            print('doi csv list file already exists, loading previous DOIs seen')
+            with open('doilist.csv', 'r') as file:
+                r = csv.reader(file)
+                try:
+                    for row in r:
+                        self.appenddoi(row[0], target=0) # add DOI to hash table for fast access
+                except:
+                    print('update of loading previous DOIs seen failed')
+                    file.close()
 
     # If running from a different machine without access to the master key of seen DOIs, supplement with list of database contents
     def create_inheritance(self, doi_dict):
@@ -22,6 +30,11 @@ class doichecker:
             # make sure doi not already known to prevent database bloat
             if not self.duplicate(doi_dict[doi]):
                 self.appenddoi(doi, target=1)
+
+    # place contents of the hash table in a file for posterity
+    def save_fa_file(self):
+        for key in self.doi_dict.keys():
+            self.appenddoi(key, target=1)
 
     # return true if a duplicate doi is passed in
     # add to records if no duplicate is found
@@ -35,12 +48,6 @@ class doichecker:
             return True
         else:
             self.appenddoi(doi, target=0)
-
-        if self.duplicate_in_file(doi):
-            print('match found in file')
-            return True
-        else:
-            self.appenddoi(doi, target=1)
 
         return False
 
@@ -72,7 +79,10 @@ class doichecker:
 
         else:
             # append to file list
-            print('appending to csv list file')
             with open('doilist.csv', 'a') as file:
                 file.write(doi + ',\n')
             file.close()
+
+    def __del__(self):
+        self.save_fa_file()
+        print('called save fast access to file')

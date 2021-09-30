@@ -6,7 +6,7 @@ import traceback
 '''
 class doichecker:
 
-    doi_list = []
+    doi_list = [] # TODO: make this a hash table
 
     def __init__(self):
         self.doi_list = []
@@ -24,6 +24,7 @@ class doichecker:
                 self.appenddoi(doi)
 
     # return true if a duplicate doi is passed in
+    # add to records if no duplicate is found
     def duplicate(self, doi):
         duplicate = False
 
@@ -48,7 +49,6 @@ class doichecker:
         with open('doilist.csv', 'r') as file:
             r = csv.reader(file)
 
-            #print("reader fieldnames =", r.fieldnames)
             try:
                 # iterate over DOIs in file and check against questionable DOI
                 for row in r:
@@ -57,11 +57,6 @@ class doichecker:
                         return True
                     else:
                         print('\t', row[0], ' doesn\'t match', doi)
-
-                    print(row[0])
-                    # append doi to end of file
-                    if row[0] != '':
-                        self.doi_list.append(row[0], target=1)
             except:
                 print('Failed to read rows')
                 traceback.print_exc()
@@ -69,10 +64,10 @@ class doichecker:
         file.close()
         return False
 
-    # add doi to file
+    # add doi to file/fast access list
     def appenddoi(self, doi, target=0):
         # append to fast access list
-        if target = 0:
+        if target == 0:
             self.doi_list.append(doi)
 
         else:

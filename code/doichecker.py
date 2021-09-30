@@ -32,17 +32,17 @@ class doichecker:
         # check inherited file of all previously seen DOIs
         if doi in self.doi_dict:
             print('match found in fast access list')
-            duplicate = True
+            return True
         else:
             self.appenddoi(doi, target=0)
 
         if self.duplicate_in_file(doi):
             print('match found in file')
-            duplicate = True
+            return True
         else:
             self.appenddoi(doi, target=1)
 
-        return duplicate
+        return False
 
     # check the hereditary file in working directory for duplicate doi
     def duplicate_in_file(self, doi):

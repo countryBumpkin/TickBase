@@ -33,8 +33,11 @@ class doichecker:
 
     # place contents of the hash table in a file for posterity
     def save_fa_file(self):
-        for key in self.doi_dict.keys():
-            self.appenddoi(key, target=1)
+        with open('doilist.csv', 'a') as file:
+            for key in self.doi_dict.keys():
+                file.write(key + ',\n')
+
+            file.close()
 
     # return true if a duplicate doi is passed in
     # add to records if no duplicate is found
@@ -44,7 +47,7 @@ class doichecker:
         # check fast access list of DOIs
         # check inherited file of all previously seen DOIs
         if doi in self.doi_dict:
-            print('match found in fast access list')
+            #print('match found in fast access list')
             return True
         else:
             self.appenddoi(doi, target=0)
@@ -60,10 +63,10 @@ class doichecker:
                 # iterate over DOIs in file and check against questionable DOI
                 for row in r:
                     if row[0] == doi:
-                        print('\tmatches', doi, '==', row[0])
+                        #print('\tmatches', doi, '==', row[0])
                         return True
-                    else:
-                        print('\t', row[0], ' doesn\'t match', doi)
+                    #else:
+                        #print('\t', row[0], ' doesn\'t match', doi)
             except:
                 print('Failed to read rows')
                 traceback.print_exc()

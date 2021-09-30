@@ -6,10 +6,10 @@ import traceback
 '''
 class doichecker:
 
-    doi_list = [] # TODO: make this a hash table
+    doi_dict = {}
 
     def __init__(self):
-        self.doi_list = []
+        self.doi_dict = {}
         try:
             file = open('doilist.csv', 'x')
             file.close()
@@ -17,20 +17,20 @@ class doichecker:
             print('doi csv list file already exists')
 
     # If running from a different machine without access to the master key of seen DOIs, supplement with list of database contents
-    def create_inheritance(self, doi_list):
-        for doi in doi_list:
+    def create_inheritance(self, doi_dict):
+        for doi in doi_dict.keys():
             # make sure doi not already known to prevent database bloat
-            if not self.duplicate(doi):
-                self.appenddoi(doi)
+            if not self.duplicate(doi_dict[doi]):
+                self.appenddoi(doi, target=1)
 
     # return true if a duplicate doi is passed in
     # add to records if no duplicate is found
     def duplicate(self, doi):
         duplicate = False
 
-        # check fast access list of DOIs (self.doi_list)
+        # check fast access list of DOIs
         # check inherited file of all previously seen DOIs
-        if doi in self.doi_list:
+        if doi in self.doi_dict:
             print('match found in fast access list')
             duplicate = True
         else:
@@ -68,7 +68,7 @@ class doichecker:
     def appenddoi(self, doi, target=0):
         # append to fast access list
         if target == 0:
-            self.doi_list.append(doi)
+            self.doi_dict[doi] = True
 
         else:
             # append to file list

@@ -46,7 +46,7 @@ class Crawler:
 
 
     # returns a tuple containing a dictionary of sources found by search,
-    def search(self, keywords=[]):
+    def search(self, keywords=[[]]):
         # create new briefcase for storing data as member variable
         self.url_briefcase = Briefcase()
         final_list = []

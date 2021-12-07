@@ -21,7 +21,7 @@ from springer_interface import ISpringer
 from neon_interface import INeon
 from pubmed_interface import IPubMed
 from lter_interface import ILTER
-    # data structures, data verification, and external object interfaces
+# data structures, data verification, and external object interfaces
 from briefcase import Briefcase
 from doichecker import doichecker
 from dspace import DSpace
@@ -374,7 +374,7 @@ class CrawlerApp:
 		
 		else:
 			a = Crawler(repository_interface=inter, csv_path='')
-			a.search(keywords=[q])
+			a.search(keywords=[[q]])
 		
 		# export to DSpace if flag is set
 		if export_toDSpace and self.logged_in:

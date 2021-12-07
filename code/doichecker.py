@@ -31,13 +31,6 @@ class doichecker:
             if not self.duplicate(doi_dict[doi]):
                 self.appenddoi(doi, target=1)
 
-    # place contents of the hash table in a file for posterity
-    def save_fa_file(self):
-        with open('doilist.csv', 'a') as file:
-            for key in self.doi_dict.keys():
-                file.write(key + ',\n')
-
-            file.close()
 
     # return true if a duplicate doi is passed in
     # add to records if no duplicate is found
@@ -53,6 +46,16 @@ class doichecker:
             self.appenddoi(doi, target=0)
 
         return False
+
+    # place contents of the hash table in a file for posterity
+    def save_fa_file(self):
+        print('hello')
+        file = open('doilist.csv', 'a')
+        with open('doilist.csv', 'a') as file:
+            for key in self.doi_dict.keys():
+                file.write(key + ',\n')
+
+            file.close()
 
     # check the hereditary file in working directory for duplicate doi
     def duplicate_in_file(self, doi):
@@ -86,6 +89,6 @@ class doichecker:
                 file.write(doi + ',\n')
             file.close()
 
-    def __del__(self):
+    def __exit__(self):
         self.save_fa_file()
         print('called save fast access to file')

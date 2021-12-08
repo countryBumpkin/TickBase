@@ -1,6 +1,6 @@
 ![TickBaseLogo](https://tickbase.net/wp-content/uploads/2021/01/TickBase-Logo-Horizontal_white-e1610842190868.png)
 # TickBase
-Data storage for web crawler results from TickBase project, summer 2021. The project aimed to:
+Web crawler from TickBase project, summer 2021. The project aimed to:
 1. Automate keyword searches of online article and dataset publishers. Allow users to input individual keyword searches or a CSV file of keywords to be used.
 2. Use REST APIs provided by the publishers to compile article metadata.
 3. Prevent duplicate resource accumulation. Many sources overlapping coverage so duplicates are removed using DOI comparisons. A record of all DOIs seen is maintained for future searches assuming that the user does not lose data once collected.

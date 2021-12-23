@@ -153,9 +153,9 @@ class Crawler:
         print('\n\nexporting csv')
         if not self.url_briefcase.is_empty():
             if keyword == '':
-                name = 'data_dump/{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), '{:%d-%m-%Y}'.format(datetime.datetime.today()))
+                name = '../data_dump/{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), '{:%d-%m-%Y}'.format(datetime.datetime.today()))
             else:
-                name = 'data_dump/{}_{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), keyword, '{:%d-%m-%Y}'.format(datetime.datetime.today()))
+                name = '../data_dump/{}_{}_{}_{}'.format(self.interface.get_tag(), self.interface.get_resultType(), keyword, '{:%d-%m-%Y}'.format(datetime.datetime.today()))
 
             name = name + '.csv'
             print(name)

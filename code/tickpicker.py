@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 	Command line interface for using tick crawler program to query known scientific databases and store that data.
 	Data is either stored in a DSpace server or CSV files that can be read by humans or parsed later to retrieve the data.
@@ -65,7 +67,7 @@ class CrawlerApp:
 
 	# print menu of actions and functions supported
 	def print_menu(self):
-		function_list = ['run single query', 'run query batch from .csv', 'export collected data to DSpace', 'manage collection']
+		function_list = ['exit', 'run single query', 'run query batch from .csv', 'export collected data to DSpace', 'manage collection']
 
 		print('MENU')
 
@@ -264,7 +266,7 @@ class CrawlerApp:
 		csv_list = []
 		try:
 			print('[0] upload all CSVs')
-			csv_list = os.listdir('data_dump')
+			csv_list = os.listdir('../data_dump')
 			i = 1
 			for csv_str in csv_list:
 				print('[{}]'.format(i), csv_str)
@@ -404,7 +406,7 @@ class CrawlerApp:
 			selection = input('EXECUTE: ')
 
 			# validate input
-			if selection == 'q' or selection == 'quit' or selection == 'exit':
+			if selection == '0' or selection == 'q' or selection == 'quit' or selection == 'exit':
 				print('ending control loop')
 				return
 

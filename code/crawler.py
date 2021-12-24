@@ -64,7 +64,10 @@ class Crawler:
                 t0 = time.time()
                 r = self.interface.query(key)
                 print('... completed query in ', time.time() - t0, ' seconds\n')
-
+                # expect results to be an array of document type objects
+                if r is None:
+                    print('ERROR: query of ', self.interface.get_tag(), ' failed, probably a server error')
+                    return # if query of source failed...
                 # check each document DOI retrieved by query for duplicates
                 for doc in r:
                     if not self.dchecker.duplicate(doc.doi):

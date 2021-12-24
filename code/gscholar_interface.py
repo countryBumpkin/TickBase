@@ -47,4 +47,5 @@ class GScholar(Portal):
             # parse Results
             print('TODO: parse results')
         """
-        return response.text
+        #return response.text
+        return None # TODO: remove when fully implemented, replace with list of Document objects

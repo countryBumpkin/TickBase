@@ -59,7 +59,10 @@ class IMendeley(Portal):
             file.print()
 
         print('len = ', len(results), results)
-        return results
+        if len(results) > 0:
+            return results
+        else:
+            return None
 
     # parse a list of mendeley.common.Person objects to get the associated authors
     def _get_authors(self, auth_list):

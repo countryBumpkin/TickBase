@@ -40,10 +40,11 @@ class GScholar(Portal):
         print('\turl =', url)
         print('\ttext result =', response.text)
 
+        """
         if len(results['results']) <= 0:
             print('ERROR no results from search')
         else:
             # parse Results
             print('TODO: parse results')
-
+        """
         return response.text

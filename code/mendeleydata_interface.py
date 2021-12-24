@@ -47,12 +47,12 @@ class IMendeley_Data(Portal):
             # convert json to dict
             try:
                 r_json = r.json()
-                print('\n\t\t', r_json)
+                #print('\n\t\t', r_json)
             except:
-                #print('decode error')
+                print('decode error')
                 break
 
-            print('RAW DOC\n\t', r_json)
+            #print('RAW DOC\n\t', r_json)
 
             # make sure there are some results to parse
             if r_json['count'] == 0 or len(r_json['results']) == 0:
@@ -71,6 +71,7 @@ class IMendeley_Data(Portal):
                 #print(item['containerTitle'])
                 #print('\t', item)
                 # convert to Document list
+                print('DOCUMENT')
                 keys = item.keys()
                 doi = ''
                 authors = ''
@@ -81,7 +82,7 @@ class IMendeley_Data(Portal):
 
                 if 'authors' in keys:
                     authors = self._get_authors(item['authors'])
-                    print('AUTHORS:\n\t', authors)
+                    print('\tAUTHORS:\n\t', authors)
 
                 if 'containerKeywords' in keys:
                     keywords = item['containerKeywords']
@@ -121,20 +122,11 @@ class IMendeley_Data(Portal):
             return 'None'
 
         for person in auth_list:
-            print('PERSON:\n\t', person)
             if person is not None:
-                dirty_name = person['name']
-                comma_pos = dirty_name.find(',')
-                clean_name = dirty_name[comma_pos+1:] + ' ' + dirty_name[:comma_pos]
                 if i == 0:
-                    authors = clean_name
-                elif i >= 1:
-                    authors = authors + ', ' + clean_name
-            i = i + 1
+                    authors = person['name']
+                else:
+                    authors = authors + ', ' + person['name']
+                i = i + 1
 
-        print('AUTHORS:', authors)
-
-        if authors == '':
-            return 'None'
-        else:
-            return authors
+        return authors

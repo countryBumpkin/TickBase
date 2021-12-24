@@ -18,10 +18,22 @@ class IPubMed(Portal):
     def get_code(self, response):
         return response.status_code
 
+    def _get_authors(self, author_list):
+        authors = ''
+        i = 0
+        for author in author_list:
+            if i == 0:
+                authors = author
+            else:
+                authors = authors + ', ' + author
+            i = i + 1
+
+        return authors
+
     # use the Mendeley API to get the paginated results of a search
     # returns a list of all data objects parsed as Documents
     def query(self, key, type='TABULAR_DATA'):
-            sleep(180)
+            #sleep(180)
             Entrez.email = "A.N.Other@example.com"  # Always tell NCBI who you are
             handle = Entrez.esearch(db="pubmed", term=key)
             record_XML = Entrez.read(handle)
@@ -61,7 +73,7 @@ class IPubMed(Portal):
                     epubd = infoDict['PubDate']                                                                                                    
 
                 # put in document
-                doc = Document(title=infoDict['Title'], authors=infoDict['AuthorList'], 
+                doc = Document(title=infoDict['Title'], authors=self._get_authors(infoDict['AuthorList']), 
                                 source=infoDict['Source'], date=epubd, 
                                 doi=infoDict['DOI'], datatype='unkown')
                 results.append(doc)

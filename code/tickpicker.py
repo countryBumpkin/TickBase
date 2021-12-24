@@ -401,17 +401,18 @@ class CrawlerApp:
 
 		while(flag):
 			# print menu
+			self.print_header()
 			self.print_menu()
 			# get/check menu choice
 			selection = input('EXECUTE: ')
 
 			# validate input
 			if selection == '0' or selection == 'q' or selection == 'quit' or selection == 'exit':
-				print('ending control loop')
+				print('Goodbye!')
 				return
 
 			elif int(selection) in range(len(function_list)):
-				print('valid selection, running')
+				#print('valid selection, running')
 				s_code = int(selection) - 1 # offset by one because first option is exit...
 				function_list[s_code]() # run selected function
 			else:

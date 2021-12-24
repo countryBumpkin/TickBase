@@ -412,7 +412,7 @@ class CrawlerApp:
 
 			elif int(selection) in range(len(function_list)):
 				print('valid selection, running')
-				s_code = int(selection)
+				s_code = int(selection) - 1 # offset by one because first option is exit...
 				function_list[s_code]() # run selected function
 			else:
 				print('incoherent input: \'', selection, '\'')

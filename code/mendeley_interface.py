@@ -49,9 +49,9 @@ class IMendeley(Portal):
                 doi = doc.identifiers['doi']
 
             print('RAW DOC\n\t', doc)
-            print('DOC\n\t', doc.id, doi)
+            print('\tDOC\n\t\t', doc.id, doi)
             auth_list = self._get_authors(doc.authors)
-            print('AUTHORS:\n\t', auth_list.encode('utf-8'))
+            print('\tAUTHORS:\n\t\t', auth_list)
             file = Document(title=doc.title, source=doc.source, link=doc.link, 
                 abstract=doc.abstract, authors=auth_list, datatype=doc.type, 
                 date=doc.year, keywords=doc.keywords, doi=doi)
@@ -63,17 +63,16 @@ class IMendeley(Portal):
 
     # parse a list of mendeley.common.Person objects to get the associated authors
     def _get_authors(self, auth_list):
-        #print(type(auth_list), auth_list)
-        #print(type(auth_list[0]), type(auth_list[0].first_name))
+        #for author in auth_list:
+            #print(author.first_name, ' ', author.last_name)
         authors = ''
         i = 0
-
         if auth_list is None:
             return 'None'
 
         for person in auth_list:
             if person is not None:
-                has_first = False
+                has_first = False # reset flag
                 if i == 0:
                     if person.first_name is not None:
                         has_first = True
@@ -85,8 +84,9 @@ class IMendeley(Portal):
                         else:
                             authors = person.last_name
 
-                elif i < len(auth_list):
+                else:
                     if person.first_name is not None:
+                        has_first = True
                         authors = authors + ', ' + person.first_name
 
                     if person.last_name is not None:

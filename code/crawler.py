@@ -52,14 +52,18 @@ class Crawler:
         final_list = []
 
         # run query for each keyword passed in
+        rows = len(keywords) # get num of rows in table
         for row in keywords:
+            cols = len(row) # get num search terms in this row
             for key in row:
                 if key == '':
                     print('skipping empty key')
                     continue
 
                 print('\nSEARCH TARGET =', key)
+                t0 = time.time()
                 r = self.interface.query(key)
+                print('... completed query in ', time.time() - t0, ' seconds\n')
 
                 # check each document DOI retrieved by query for duplicates
                 for doc in r:
@@ -69,13 +73,19 @@ class Crawler:
                         continue
 
                 # store results in pandas table
+                t0 = time.time()
                 self.build_table(search_result=r)
+                print('... built table in ', time.time() - t0, ' seconds\n')
                 # test writing results to table
                 #self.export_to_excel(key)
+                t0 = time.time()
                 self.export_to_csv(key)
+                print('... exported to csv in ', time.time() - t0, ' seconds\n')
                 #self.export_to_batch(key)
 
-                time.sleep(120.0) # delay execution 2min
+                # if we are searching multiple terms, pause 2 min to prevent locking server
+                if rows > 1 or cols > 1:
+                    time.sleep(120.0)
 
 
         print('\tSUMMARY DICTIONARY:', final_list)

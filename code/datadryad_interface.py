@@ -16,6 +16,8 @@ class IDataDryad(Portal):
         author_str = ''
         count = 0
 
+        #print('authors before extraction ', dict_arr)
+
         for author in dict_arr:
             if count == 0:
                 author_str = author['firstName'] + ' ' + author['lastName']

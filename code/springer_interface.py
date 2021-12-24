@@ -18,11 +18,16 @@ class ISpringer(Portal):
         str_out = ''
         i = 0
 
+        print('creator list ', creator_list)
+
         for person in creator_list:
+            first_last = person['creator'].split(',')
+            name = first_last[1] + ' ' + first_last[0] # rearrange to 'first_name last_name'
+
             if i == 0:
-                str_out = person['creator']
+                str_out = name
             else:
-                str_out = str_out + ', [' + person['creator'] + ']'
+                str_out = str_out + ', ' + name    
 
             i = i + 1
 

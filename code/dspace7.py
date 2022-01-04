@@ -76,14 +76,14 @@ class DSpace:
             return False
         else:
             print('successful authentication, HTTP code ', r.status_code)
-            self._r_session.headers.update({'Authorization': r.headers['Authorization']})
+            self._r_session.headers.update({'Authorization': r.headers['Authorization'], 'X-XSRF-TOKEN': r.headers['DSPACE-XSRF-TOKEN']})
             return True
 
 
 
     # log the current user out of the database
     def logout(self):
-        r = requests.post(self.base_url + '/api/authn/logout', headers={'X-XSRF-TOKEN': self._csrf_token})
+        r = requests.post(self.base_url + '/api/authn/logout')
 
 
     # get status of the user token/API as a boolean, true if connected
@@ -225,6 +225,9 @@ class DSpace:
             if r.status_code != 200:
                 raise Exception('connnection to '+self.base_url+' failed')
                 print(r.text)
+
+            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
             # process results
             r_json = r.json()
@@ -398,7 +401,8 @@ class DSpace:
             raise Exception('Identifier passed to delete item is invalid, contains \'\/\' try using UUID instead of handle')
         
         r = self._r_session.delete(self.base_url+'core/items/{id}'.format(id=item_id))
-        if r.status_code != 200:
+        # 200 is good, 204 is good but no content
+        if r.status_code >= 400:
             raise Exception('({})\n\t{}'.format(r.status_code, r.text))
 
 

@@ -24,7 +24,7 @@ from lter_interface import ILTER
     # data structures, data verification, and external object interfaces
 from briefcase import Briefcase
 from doichecker import doichecker
-from dspace import DSpace
+from dspace7 import DSpace
 
 
 

@@ -48,7 +48,7 @@ class DSpace:
             item = (i["_embedded"])['indexableObject']
             item_uuids.append(item['uuid'])
 
-        return item_uuids
+            return item_uuids
 
     # Check if REST API is installed
     def api_running(self):
@@ -64,8 +64,8 @@ class DSpace:
         self.get_status() # get an updated crsf token
 
         payload={
-            'user': self.username,
-            'password': self.passwd
+        'user': self.username,
+        'password': self.passwd
         }
 
         r = self._r_session.post(self.base_url+'authn/login', data=payload)
@@ -90,26 +90,26 @@ class DSpace:
     def get_status(self):
         if self._bearer_tkn == '':
             print('Warning: get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
-        
-        r = self._r_session.get(self.base_url+'authn/status')
+
+            r = self._r_session.get(self.base_url+'authn/status')
 
         # update CSRF token if available
         if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
             self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
-        if r.status_code != 200:
-            print('(', r.status_code, ') AUTHN STATUS \n\t', 'False')
-            print(r.text)
-            print('\tCSRF: ', self._csrf_token, '\n\tAuthorization: ', self._bearer_tkn)
-            
-            return False
-        else: 
-            json_out = r.json() # get json output
-            print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
-            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
-                self._csrf_token = r.cookies['DSPACE-XSRF-COOKIE'] # update csrf token
-                #print('set CSRF Token: ', self._csrf_token)
-            return json_out['authenticated']
+            if r.status_code != 200:
+                print('(', r.status_code, ') AUTHN STATUS \n\t', 'False')
+                print(r.text)
+                print('\tCSRF: ', self._csrf_token, '\n\tAuthorization: ', self._bearer_tkn)
+
+                return False
+            else: 
+                json_out = r.json() # get json output
+                print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
+                if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                    self._csrf_token = r.cookies['DSPACE-XSRF-COOKIE'] # update csrf token
+                    #print('set CSRF Token: ', self._csrf_token)
+                    return json_out['authenticated']
 
     '''
         Get the status of the connection to dspace and return a dictionary with the following information:
@@ -120,7 +120,7 @@ class DSpace:
             fullname: name/role associated with this account
             apiVersion: version of the API running on server
             sourceVersion: version of code on server
-    '''
+            '''
     def get_session_status(self):
         r = self._r_session.get(self.base_url+'authn/status')
         # update CSRF token
@@ -141,7 +141,7 @@ class DSpace:
             dense_meta = {} # dictionary with simple key, value pairs
             for meta in r.json():
                 dense_meta[meta['key']] = meta['value']
-            return dense_meta
+                return dense_meta
 
 
     # Get an array of all the communities in the repository
@@ -157,7 +157,7 @@ class DSpace:
             if r.status_code != 200:
                 raise Exception('connnection to '+self.base_url+' failed')
 
-            communities.append(r.json())
+                communities.append(r.json())
 
             # check if there are more results beyond this page
             if len(r.json()) < 100:
@@ -171,7 +171,7 @@ class DSpace:
                 print('COMMUNITY \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
-        return communities
+                return communities
 
 
     # Get an array of all the collections in the repository
@@ -187,7 +187,7 @@ class DSpace:
             if r.status_code != 200:
                 raise Exception('connnection to '+self.base_url+' failed')
 
-            collections.append(r.json())
+                collections.append(r.json())
 
             # check if there are more results beyond this page
             if len(r.json()) < 100:
@@ -201,7 +201,7 @@ class DSpace:
                 print('COLLECTION \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
-        return collections[0]
+                return collections[0]
 
 
     # Get an array of all the item UUIDs in a collection
@@ -226,8 +226,8 @@ class DSpace:
                 raise Exception('connnection to '+self.base_url+' failed')
                 print(r.text)
 
-            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
-                self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
+                if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                    self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
             # process results
             r_json = r.json()
@@ -248,7 +248,7 @@ class DSpace:
                 print('ITEM \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
-        return item_uuids
+                return item_uuids
 
 
     # get the metadata from DSpace for an item identified by UUID
@@ -278,9 +278,9 @@ class DSpace:
                 print('no doi attached to object\n\t\t', dspace_meta)
                 return
 
-            doi = dspace_meta['dc.identifier']
-            dres = DOIResolver()
-            new_meta = dres.get_meta(doi)
+                doi = dspace_meta['dc.identifier']
+                dres = DOIResolver()
+                new_meta = dres.get_meta(doi)
             #print('NEW META:\n\t\t', new_meta)
 
             # check for keys before adding them to metadata
@@ -291,44 +291,44 @@ class DSpace:
             date = ''
             if 'abstract' in new_meta.keys():
                 abstract = new_meta['abstract']
-            if 'URL' in new_meta.keys():
-                URL = new_meta['URL']
-            if 'author' in new_meta.keys():
-                authors = dres.authors_to_str(new_meta['author'])
-            if 'publisher' in new_meta.keys():
-                publisher = new_meta['publisher']
+                if 'URL' in new_meta.keys():
+                    URL = new_meta['URL']
+                    if 'author' in new_meta.keys():
+                        authors = dres.authors_to_str(new_meta['author'])
+                        if 'publisher' in new_meta.keys():
+                            publisher = new_meta['publisher']
 
             # format metadata and upload
             payload = json.dumps([
                 {
-                    'key': "dc.identifier.uri", 
-                    'value': URL, 
-                    'language': None
+                'key': "dc.identifier.uri", 
+                'value': URL, 
+                'language': None
                 },
                 {
-                    'key': 'dc.contributor.author',
-                    'value': authors,
-                    'language': None
+                'key': 'dc.contributor.author',
+                'value': authors,
+                'language': None
                 },
                 {
-                    'key': 'dc.publisher',
-                    'value': publisher,
-                    'language': None
+                'key': 'dc.publisher',
+                'value': publisher,
+                'language': None
                 },
                 {
-                    'key': 'dc.description.abstract',
-                    'value': abstract,
-                    'language': None
+                'key': 'dc.description.abstract',
+                'value': abstract,
+                'language': None
                 },
                 {
-                    'key': 'dc.date',
-                    'value': dres.get_date(new_meta),
-                    'language': None
+                'key': 'dc.date',
+                'value': dres.get_date(new_meta),
+                'language': None
                 }
-            ])
+                ])
 
             headers = {
-                'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
             }
 
             r = requests.post(self.base_url + '/items/{}/metadata'.format(ditem['uuid']), headers=headers, data=payload, cookies=self.session_id)
@@ -337,60 +337,115 @@ class DSpace:
                 raise Exception('could not update item', r.text)
 
     # create an item and add to collection
-    def create_item(self, cid, title, author, description, doi):
+    def create_item(self, cid, title, authors, description, doi):
         dres = DOIResolver()
         if doi != '':
             try:
                 sup_meta = dres.get_meta(doi)
             except:
                 sup_meta = {}
-        else:
-            sup_meta = {}
+            else:
+                sup_meta = {}
 
         if 'abstract' in sup_meta.keys():
             abstract = sup_meta['abstract']
         else:
             abstract = ''
 
-        # construct new item object with metadata using dublin core identifiers, convert json dict to string
-        payload = json.dumps(
-                    {
-                        'name': title, # this field is not displayed
-                        'metadata': {
-                            "dc.contributor.author": author,
-                            "dc.description": description,
-                            "dc.title": [
-                                {
-                                    "value": title,
-                                    "language": "en",
-                                    "authority": None,
-                                    "confidence": -1
-                                }
-                            ],
-                            "dc.identifier.other": [
-                                {
-                                    "value": doi,
-                                    "language": None,
-                                    "authority": None,
-                                    "confidence": -1,
-                                    "place": 0 
-                                }
-                            ],
-                            "dc.date": dres.get_date(sup_meta),
-                            "dc.description.abstract": abstract
-                        },
-                        'inArchive': True,
-                        'discoverable': True,
-                        'withdrawn': False,
-                        'type': "item"
-                    }
-                )
+        # clean all text fields to remove HTML tags
+        description = BeautifulSoup(description, 'lxml').text
+        abstract = BeautifulSoup(abstract, 'lxml').text
+        title = BeautifulSoup(title, 'lxml').text
 
-        r = self._r_session.post(self.base_url+'core/items?owningCollection={}'.format(cid), data=payload)
+        # construct new item object with metadata using dublin core identifiers, convert json dict to string
+        payload = json.dumps({
+          "name": title,
+          "metadata": {
+            "dc.contributor.author": [
+              {
+                "value": authors,
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.date.issued": [
+              {
+                "value": dres.get_date(sup_meta),
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.description": [
+              {
+                "value": description,
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.description.abstract": [
+              {
+                "value": abstract,
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.identifier.citation": [
+              {
+                "value": None,
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.identifier.other": [
+              {
+                "value": doi,
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.identifier.uri": [
+              {
+                "value": None,
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ],
+            "dc.title": [
+              {
+                "value": "foo 3",
+                "language": None,
+                "authority": None,
+                "confidence": -1,
+                "place": 0
+              }
+            ]
+          },
+          "inArchive": True,
+          "discoverable": True,
+          "withdrawn": False,
+          "entityType": None,
+          "type": "item"
+        })
+
+        r = self._r_session.post(self.base_url+'core/items?owningCollection={}'.format(cid), headers={'content-type': 'application/json'}, data=payload)
 
         # check status of item post and print message if unsuccessful
         if r.status_code != 200:
-            print('HTTP ERROR RESPONSE:\n\t',r.text)
+            print('({})\n\t{}'.format(r.status_code, r.text))
         else:
             print('SUCCESS: ', r.status_code)
 
@@ -399,8 +454,8 @@ class DSpace:
     def delete_item(self, item_id):
         if '/' in item_id:
             raise Exception('Identifier passed to delete item is invalid, contains \'\/\' try using UUID instead of handle')
-        
-        r = self._r_session.delete(self.base_url+'core/items/{id}'.format(id=item_id))
+
+            r = self._r_session.delete(self.base_url+'core/items/{id}'.format(id=item_id))
         # 200 is good, 204 is good but no content
         if r.status_code >= 400:
             raise Exception('({})\n\t{}'.format(r.status_code, r.text))
@@ -436,4 +491,4 @@ class DSpace:
                 
                 case.add(doc.to_dictionary())
 
-        return case
+                return case

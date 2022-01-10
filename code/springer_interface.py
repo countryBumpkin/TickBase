@@ -13,8 +13,16 @@ class ISpringer(Portal):
         self.tag = 'springernature'
         self.result_type = 'mixed'
 
-    # parse the list of creators and put them in a list
+    # return authors in last-first name format
     def _get_creators_(self, creator_list):
+        author_list = []
+        for i in creator_list:
+            author_list.append(i['creator'])
+        return author_list
+
+
+    # parse the list of creators and put them in a list
+    def _get_creators_str_(self, creator_list):
         str_out = ''
         i = 0
 

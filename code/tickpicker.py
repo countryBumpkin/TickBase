@@ -26,7 +26,7 @@ from lter_interface import ILTER
 # data structures, data verification, and external object interfaces
 from briefcase import Briefcase
 from doichecker import doichecker
-from dspace import DSpace
+from dspace7 import DSpace
 
 class CrawlerApp:
 
@@ -121,7 +121,7 @@ class CrawlerApp:
 
 		uname = ''
 		psswd = ''
-		baseurl = 'http://dspace-dev.nkn.uidaho.edu:8080'
+		baseurl = 'https://data.tickbase.net/server/api/'
 
 		# add username and password entry
 		confirmed = False
@@ -317,14 +317,16 @@ class CrawlerApp:
 			self.logged_in = True
 			self.dsession = dspace
 
-		# get list of item objects in DSpace collection
-		item_list = dsession.get_items(cid, False)
+		# get list of item UUIDs in DSpace collection
+		item_list = self.dsession.get_items(cid, False)
 
 		# parse DOIs from items
 		doi_list = []
 		for item in item_list:
 			# get doi from each item and place in a list
-			doi = dsession.get_item_metadata(item['uuid'])['dc.identifier']	
+			# TODO fix get_item_metadata
+			meta = self.dsession.get_item_metadata(item)
+			doi = (meta['dc.identifier.other'])['value']	
 			doi_list.append(doi)
 
 			print('\t', doi)

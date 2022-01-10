@@ -11,8 +11,18 @@ class IDataDryad(Portal):
         self.tag = 'data_dryad'
         self.result_type = 'data'
 
-    # converting the author objects to a string of names
+    # parse dictionary of authors and convert to array of author names in "last, first" format
     def _get_authors(self, dict_arr):
+        author_list = []
+
+        for author in dict_arr:
+            last_first = author['lastName'] + ', ' + author['firstName']
+            author_list.append(last_first)
+
+        return author_list
+
+    # converting the author objects to a string of names
+    def _get_authors_str(self, dict_arr):
         author_str = ''
         count = 0
 

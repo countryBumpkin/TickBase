@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from dcxml import dcxml
+from bs4 import BeautifulSoup
 import os
 from collections import defaultdict
 
@@ -99,7 +100,7 @@ class Briefcase:
 			dspace.create_item(
 						cid=cid,
 						title=doc['Title'],
-						author=doc['Authors'],
+						authors=doc['Authors'],
 						description=doc['Abstract'],
 						doi=doc['DOI']
 						)
@@ -136,6 +137,8 @@ class Document:
 		self.data['DOI'] = doi
 		self.data['Datatype'] = datatype
 		self.data['Date'] = date
+		# remove html from the fields above
+		self.remove_html()
 
 	def get_title(self):
 		return self.data['Title']
@@ -148,6 +151,12 @@ class Document:
 
 	def get_source(self):
 		return self.data['Source']
+
+	def remove_html(self):
+		# provide all data in dictionary format too
+		self.data['Title'] = BeautifulSoup(self.data['Title'], "lxml").text 
+		self.data['Abstract'] = BeautifulSoup(self.data['Abstract'], "lxml").text
+		self.data['Keywords'] = BeautifulSoup(self.data['Keywords'], "lxml").text
 
 	# convert the stored data to a json data object, currently just dumps the json data to a string
 	# TODO: decide how to handle the data

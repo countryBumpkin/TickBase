@@ -69,6 +69,7 @@ class IKNB(Portal):
 				authors = ''
 				keywords = ''
 				abstract = ''
+				url = ''
 
 				# verify keys are in the dictionary
 				if 'title' in keys:
@@ -76,14 +77,16 @@ class IKNB(Portal):
 				if 'identifier' in keys:
 					doi = item['identifier']
 				if 'author' in keys:
-					authors = item['author']
+					authors = [item['author']]
 				if 'keywords' in keys:
 					keywords = item['keywords']
 				if 'abstract' in keys:
 					abstract = item['abstract']
+				if 'dataUrl' in keys:
+					url = item['dataUrl']
 
 				file = Document(title=title,
-								link=item['dataUrl'],
+								link=url,
 								abstract=abstract,
 								keywords=keywords,
 								authors=authors,

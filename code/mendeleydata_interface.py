@@ -110,8 +110,36 @@ class IMendeley_Data(Portal):
     def get_content(self, response):
         return ('list', response)
 
+    def _get_authors(self, authors_list):
+        if authors_list is None:
+            return None
+
+        author_list = []
+
+        # reformat names and place in output list
+        for persn in authors_list:
+            if persn is not None:
+                author_list.append(persn['name'])
+                """
+                wrds = persn['name'].split() # turn name into array of words, formatted "first middle last"
+                # reformat as "last, first middle"
+                last_nm = wrds[len(wrds) - 1]
+                # all words before last name should follow comma
+                first_middle = ''
+                for i in range(0, len(wrds) - 1):
+                    if i == 0:
+                        first_middle = wrds[i]
+                    else:
+                        first_middle = first_middle + ' ' + wrds[i]
+                # combine last name and first name str into one and append
+                author_list.append(last_nm + ', ' + first_middle)
+                """
+
+        return author_list
+    
+
     # parse a list of mendeley.common.Person objects to get the associated authors
-    def _get_authors(self, auth_list):
+    def _get_authors_str(self, auth_list):
         #print(type(auth_list), auth_list)
         #auth_list = auth_list[0]
         #print(type(auth_list), type(auth_list.first_name))

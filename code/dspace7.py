@@ -38,9 +38,9 @@ class DSpace:
         if base_url == '':
             self.base_url = self._nkn_base_url
         else:
-            self.base_url = base_url + '/server'
+            self.base_url = base_url
 
-    # parse all items from the container and return as a list of UUIDs
+    # Parse all items from the container and return as a list of UUIDs
     def _parse_objects_for_items(self, item_containers):
         item_uuids = []
         # iterate and retrieve all item UUIDs
@@ -49,6 +49,23 @@ class DSpace:
             item_uuids.append(item['uuid'])
 
             return item_uuids
+
+    # Take in list of authors formatted as "last, first" and convert to list of dictionary objects
+    # that can be imported to dspace.
+    def _authors_to_dspace_object(self, author_str_list):
+        author_list = [] # list of dspace dictionaries
+        for i in author_str_list:
+            author = {
+                        "value": i,
+                        "language": None,
+                        "authority": None,
+                        "confidence": -1,
+                        "place": 0  
+                    }
+            # add author to output list
+            author_list.append(author)
+
+        return author_list
 
     # Check if REST API is installed
     def api_running(self):
@@ -76,6 +93,7 @@ class DSpace:
             return False
         else:
             print('successful authentication, HTTP code ', r.status_code)
+            self._bearer_tkn = r.headers['Authorization']
             self._r_session.headers.update({'Authorization': r.headers['Authorization'], 'X-XSRF-TOKEN': r.headers['DSPACE-XSRF-TOKEN']})
             return True
 
@@ -91,25 +109,26 @@ class DSpace:
         if self._bearer_tkn == '':
             print('Warning: get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
 
-            r = self._r_session.get(self.base_url+'authn/status')
+        r = self._r_session.get(self.base_url+'authn/status')
 
         # update CSRF token if available
         if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
             self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
-            if r.status_code != 200:
-                print('(', r.status_code, ') AUTHN STATUS \n\t', 'False')
-                print(r.text)
-                print('\tCSRF: ', self._csrf_token, '\n\tAuthorization: ', self._bearer_tkn)
+        if r.status_code != 200:
+            print('(', r.status_code, ') AUTHN STATUS \n\t', 'False')
+            print(r.text)
+            if r.status_code < 400: print('\tCSRF: ', self._csrf_token, '\n\tAuthorization: ', self._bearer_tkn)
+            return False
 
-                return False
-            else: 
-                json_out = r.json() # get json output
-                print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
-                if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
-                    self._csrf_token = r.cookies['DSPACE-XSRF-COOKIE'] # update csrf token
-                    #print('set CSRF Token: ', self._csrf_token)
-                    return json_out['authenticated']
+        else: 
+            json_out = r.json() # get json output
+            print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
+            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                self._csrf_token = r.cookies['DSPACE-XSRF-COOKIE'] # update csrf token
+
+            #print('set CSRF Token: ', self._csrf_token)
+            return json_out['authenticated']
 
     '''
         Get the status of the connection to dspace and return a dictionary with the following information:
@@ -132,16 +151,19 @@ class DSpace:
 
     # get the DSpace metadata for a single item specified by the uuid
     def get_item_metadata(self, uuid):
-        r = requests.get(self.base_url + '/items/{}/metadata'.format(uuid))
+        r = requests.get(self.base_url + 'core/items/{}'.format(uuid))
 
         if r.status_code != 200:
             raise Exception('unable to get item: ' + uuid + '\n\t' + r.text)
+        """
         else:
             # convert from DSpace complex metadata format to simple key value pair dict
             dense_meta = {} # dictionary with simple key, value pairs
             for meta in r.json():
                 dense_meta[meta['key']] = meta['value']
                 return dense_meta
+        """
+        return r.json()['metadata']
 
 
     # Get an array of all the communities in the repository
@@ -338,6 +360,7 @@ class DSpace:
 
     # create an item and add to collection
     def create_item(self, cid, title, authors, description, doi):
+        # get supplemental metadata by resolving DOI
         dres = DOIResolver()
         if doi != '':
             try:
@@ -347,6 +370,7 @@ class DSpace:
             else:
                 sup_meta = {}
 
+        # get abstract from resolved DOI
         if 'abstract' in sup_meta.keys():
             abstract = sup_meta['abstract']
         else:
@@ -361,15 +385,7 @@ class DSpace:
         payload = json.dumps({
           "name": title,
           "metadata": {
-            "dc.contributor.author": [
-              {
-                "value": authors,
-                "language": None,
-                "authority": None,
-                "confidence": -1,
-                "place": 0
-              }
-            ],
+            "dc.contributor.author": self._authors_to_dspace_object(authors),
             "dc.date.issued": [
               {
                 "value": dres.get_date(sup_meta),
@@ -426,7 +442,7 @@ class DSpace:
             ],
             "dc.title": [
               {
-                "value": "foo 3",
+                "value": title,
                 "language": None,
                 "authority": None,
                 "confidence": -1,
@@ -455,7 +471,8 @@ class DSpace:
         if '/' in item_id:
             raise Exception('Identifier passed to delete item is invalid, contains \'\/\' try using UUID instead of handle')
 
-            r = self._r_session.delete(self.base_url+'core/items/{id}'.format(id=item_id))
+        r = self._r_session.delete(self.base_url+'core/items/{id}'.format(id=item_id))
+
         # 200 is good, 204 is good but no content
         if r.status_code >= 400:
             raise Exception('({})\n\t{}'.format(r.status_code, r.text))

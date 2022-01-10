@@ -19,6 +19,13 @@ class IPubMed(Portal):
         return response.status_code
 
     def _get_authors(self, author_list):
+        authors_list = []
+        for i in author_list:
+            authors_list.append(i)
+
+        return authors_list
+
+    def _get_authors_str(self, author_list):
         authors = ''
         i = 0
         for author in author_list:

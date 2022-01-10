@@ -64,8 +64,27 @@ class IMendeley(Portal):
         else:
             return None
 
+    def _get_authors(self, author_list):
+        if author_list is None:
+            return None
+
+        authors_list = []
+
+        for persn in author_list:
+            if persn is not None:
+                print('adding ', persn)
+                if persn.last_name is not None and persn.first_name is not None:
+                    authors_list.append(persn.last_name + ', ' + persn.first_name)
+                else:
+                    authors_list.append(persn.last_name)
+
+            else:
+                print('person is none')
+
+        return authors_list
+
     # parse a list of mendeley.common.Person objects to get the associated authors
-    def _get_authors(self, auth_list):
+    def _get_authors_str(self, auth_list):
         #for author in auth_list:
             #print(author.first_name, ' ', author.last_name)
         authors = ''

@@ -37,30 +37,30 @@ class ILTER(Portal):
 
                 resDict = {}
                 grndchld_txt = ''
+                authors_list = []
 
                 # parse meta from returned documents
                 for grandchild in child:
                     if grandchild.tag == 'authors':
-                        grndchld_txt = ''
                         author_count = 0
                         # convert xml author tags to string "last, first; last, first"
                         for name in grandchild:
                             #print('\t\t\t', name.text)
                             if author_count == 0:
-                                grndchld_txt = name.text
+                                authors_list.append(name.text)
                                 author_count = author_count + 1
                             else:
-                                grndchld_txt = grndchld_txt + '; ' + name.text
+                                authors_list.append(name.text)
                                 author_count = author_count + 1
 
-                        resDict[grandchild.tag] = grndchld_txt
-                        print('\t\tgrandchild tag =', grandchild.tag, ' text =', grndchld_txt)
+                        resDict[grandchild.tag] = authors_list
+                        print('\t\tgrandchild tag =', grandchild.tag, ' text =', authors_list)
 
                     else:
                         print('\t\tgrandchild tag =', grandchild.tag, ' text =', grandchild.text)
                         resDict[grandchild.tag] = grandchild.text
 
-                doc = Document(title=resDict['title'], authors=grndchld_txt, 
+                doc = Document(title=resDict['title'], authors=authors_list, 
                                 abstract=resDict['abstract'], doi=resDict['doi'], datatype='unkown')
                 #doc.print()
                 docs.append(doc)

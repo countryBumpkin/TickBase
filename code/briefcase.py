@@ -153,10 +153,11 @@ class Document:
 		return self.data['Source']
 
 	def remove_html(self):
-		# provide all data in dictionary format too
-		self.data['Title'] = BeautifulSoup(self.data['Title'], "lxml").text 
-		self.data['Abstract'] = BeautifulSoup(self.data['Abstract'], "lxml").text
-		self.data['Keywords'] = BeautifulSoup(self.data['Keywords'], "lxml").text
+		# if strings are not none, check for html and remove
+		if self.data['Title'] != None:
+			self.data['Title'] = BeautifulSoup(self.data['Title'], "lxml").text 
+		if self.data['Abstract'] != None:
+			self.data['Abstract'] = BeautifulSoup(self.data['Abstract'], "lxml").text
 
 	# convert the stored data to a json data object, currently just dumps the json data to a string
 	# TODO: decide how to handle the data

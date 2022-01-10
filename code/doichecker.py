@@ -40,7 +40,7 @@ class doichecker:
         # check fast access list of DOIs
         # check inherited file of all previously seen DOIs
         if doi in self.doi_dict:
-            #print('match found in fast access list')
+            print('match found in fast access list')
             return True
         else:
             self.appenddoi(doi, target=0)
@@ -49,9 +49,7 @@ class doichecker:
 
     # place contents of the hash table in a file for posterity
     def save_fa_file(self):
-        print('hello')
-        file = open('doilist.csv', 'a')
-        with open('doilist.csv', 'a') as file:
+        with open('doilist.csv', 'w') as file:
             for key in self.doi_dict.keys():
                 file.write(key + ',\n')
 
@@ -89,6 +87,9 @@ class doichecker:
                 file.write(doi + ',\n')
             file.close()
 
+    """
+    # called if used in with clause
     def __exit__(self):
         self.save_fa_file()
         print('called save fast access to file')
+    """

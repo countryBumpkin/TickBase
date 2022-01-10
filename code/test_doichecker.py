@@ -1,7 +1,7 @@
 from doichecker import doichecker
 import timeit
 
-test_n = 3000
+test_n = 20
 
 def test_1():
 

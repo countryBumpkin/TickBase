@@ -49,7 +49,7 @@ class Crawler:
     def search(self, keywords=[[]]):
         # create new briefcase for storing data as member variable
         self.url_briefcase = Briefcase()
-        final_list = []
+        final_list = [] # list of all DOIs collected in this search
 
         # run query for each keyword passed in
         rows = len(keywords) # get num of rows in table
@@ -70,7 +70,7 @@ class Crawler:
                     return # if query of source failed...
                 # check each document DOI retrieved by query for duplicates
                 for doc in r:
-                    if not self.dchecker.duplicate(doc.doi):
+                    if not self.dchecker.duplicate(doc.doi): 
                         final_list.append(doc)
                     else:
                         continue
@@ -90,7 +90,9 @@ class Crawler:
                 if rows > 1 or cols > 1:
                     time.sleep(120.0)
 
-
+        # FINAL CLEANUP
+        # save collected DOIs to file for later
+        self.dchecker.save_fa_file()
         print('\tSUMMARY DICTIONARY:', final_list)
 
 

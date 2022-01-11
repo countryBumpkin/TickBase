@@ -157,6 +157,10 @@ class DSpace:
         if r.status_code != 200:
             print(uuid)
             raise Exception('unable to get item: ' + uuid + '\n\t' + r.text)
+
+        # update CSRF token if possible
+        if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+            self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
         """
         else:
             # convert from DSpace complex metadata format to simple key value pair dict
@@ -198,34 +202,45 @@ class DSpace:
                 return communities
 
 
-    # Get an array of all the collections in the repository
+    # Get an array of all the collections in the repository as dictionaries
     def get_collections(self, debug=True):
-        collections = []
-        offset = 0
+        collection_json = [] # list of uuids retreived from DSpace
+        page = 0
+        page_limit = 1
 
         # run loop infinitely or until server can't give full page of results
-        while True:
-            r = requests.get(self.base_url+'/collections?offset={}&limit=100'.format(offset))
+        while page < page_limit:
+            r = self._r_session.get(self.base_url+'core/collections?page={}'.format(page))
 
             # make sure request went through, otherwise throw error
             if r.status_code != 200:
                 raise Exception('connnection to '+self.base_url+' failed')
-
-                collections.append(r.json())
-
-            # check if there are more results beyond this page
-            if len(r.json()) < 100:
-                break
             else:
-                offset = offset + 100
+                # update CSRF token if possible
+                if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                    self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
-        # print info about all communities returned
-        if debug:
-            for i in r.json():
-                print('COLLECTION \'{}\':'.format(i['name']))
-                print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
+            # get json content
+            json_out = r.json()
+            embedded_content = json_out['_embedded']
 
-                return collections[0]
+            # iterate over the collection returned, is an array of dictionaries
+            collections = embedded_content['collections']
+            for item in collections:
+                collection_json.append(item)
+
+            # check page limits
+            page_limit = (json_out['page'])['totalPages']
+            # move to next page
+            page = page + 1
+
+            # print info about all communities returned
+            if debug:
+                for i in collections:
+                    print('COLLECTION \'{}\':'.format(i['name']))
+                    print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
+
+        return collection_json
 
 
     # Get an array of all the item UUIDs in a collection
@@ -249,7 +264,8 @@ class DSpace:
             if r.status_code != 200:
                 raise Exception('connnection to '+self.base_url+' failed')
                 print(r.text)
-
+            else:
+                # update CSRF token if possible
                 if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                     self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
@@ -282,6 +298,9 @@ class DSpace:
         if r.status_code != 200:
             raise Exception('connection to '+self.base_url+' failed')
         else:
+            # update CSRF token if possible
+            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
             print('After Get Item:', r.json())
             return r.json()
 
@@ -465,6 +484,9 @@ class DSpace:
         if r.status_code != 200:
             print('({})\n\t{}'.format(r.status_code, r.text))
         else:
+            # update CSRF token if possible
+            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
             print('SUCCESS: ', r.status_code)
 
 
@@ -478,15 +500,19 @@ class DSpace:
         # 200 is good, 204 is good but no content
         if r.status_code >= 400:
             raise Exception('({})\n\t{}'.format(r.status_code, r.text))
+        else:
+            # update CSRF token if possible
+            if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
+                self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
 
 
     # delete all items from the dspace collection specified
     def empty_collection(self, cid):
-        items = self.get_items(cid=cid)
-        print(items)
-        for item in items:
+        item_uuids = self.get_items(cid=cid)
+        print(item_uuids)
+        for item in item_uuids:
             print(item)
-            self.delete_item(item['uuid'])
+            self.delete_item(item)
 
     '''
         iterate through csv and convert each entry into a dspace 'item'

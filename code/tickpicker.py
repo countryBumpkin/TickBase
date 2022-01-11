@@ -180,10 +180,12 @@ class CrawlerApp:
 	def manage_collection(self):
 
 		self.clear_screen()
+		# login/authenticate
 		if not self.logged_in:
 			uname, psswd, baseurl = self._get_login_credentials()
 			try:
 				self.dsession = DSpace(username=uname, passwd=psswd, base_url=baseurl) 
+				self.dsession.authenticate()
 			except:
 				print('FAILED TO LOGIN')
 				return
@@ -192,8 +194,8 @@ class CrawlerApp:
 
 		# print menu of collections available to modify
 		cid = ''
-		collections = self.dsession.get_collections(True)
-		print(collections)
+		collections = self.dsession.get_collections(False) # set debug flag to false
+		#print(collections)
 		i = 0
 		for collection in collections:
 			print('[{}] {}: {}'.format(i, collection['name'], collection['uuid']))
@@ -424,7 +426,7 @@ class CrawlerApp:
 				print('Goodbye!')
 				return
 
-			elif int(selection) in range(len(function_list)):
+			elif int(selection) in range(len(function_list) + 1):
 				#print('valid selection, running')
 				s_code = int(selection) - 1 # offset by one because first option is exit...
 				function_list[s_code]() # run selected function

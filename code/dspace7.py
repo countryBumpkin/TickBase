@@ -46,9 +46,10 @@ class DSpace:
         # iterate and retrieve all item UUIDs
         for i in item_containers:
             item = (i["_embedded"])['indexableObject']
+            #print('DSPACE ', item['uuid'])
             item_uuids.append(item['uuid'])
 
-            return item_uuids
+        return item_uuids
 
     # Take in list of authors formatted as "last, first" and convert to list of dictionary objects
     # that can be imported to dspace.
@@ -154,6 +155,7 @@ class DSpace:
         r = requests.get(self.base_url + 'core/items/{}'.format(uuid))
 
         if r.status_code != 200:
+            print(uuid)
             raise Exception('unable to get item: ' + uuid + '\n\t' + r.text)
         """
         else:
@@ -258,7 +260,7 @@ class DSpace:
             items = (searchResults["_embedded"])["objects"] # gets list of item containers containing metadata
             page_data = searchResults["page"] # returns dict with page num, results length
             # get list of UUIDs for lookup
-            item_uuids.append(self._parse_objects_for_items(items))
+            item_uuids += self._parse_objects_for_items(items)
             # check limit
             limit = page_data['totalPages'] 
             # increment page index
@@ -270,7 +272,7 @@ class DSpace:
                 print('ITEM \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
 
-                return item_uuids
+        return item_uuids
 
 
     # get the metadata from DSpace for an item identified by UUID

@@ -33,6 +33,10 @@ class CrawlerApp:
 	# login credentials for DSpace
 	logged_in = False
 	login_cred = ()
+	uname = ''
+	psswd = ''
+	cid = ''
+
 
 	# DSpace session stored from previous login
 	dsession = None
@@ -121,7 +125,7 @@ class CrawlerApp:
 
 		uname = ''
 		psswd = ''
-		baseurl = 'https://data.tickbase.net/server/api/'
+		baseurl = ''
 
 		# add username and password entry
 		confirmed = False
@@ -163,9 +167,11 @@ class CrawlerApp:
 					return None
 
 		self.logged_in = True
-		login_cred = (uname, passwd, baseurl)
+		self.uname = uname
+		self.psswd = passwd
+		self.login_cred = (uname, passwd, baseurl)
 
-		return login_cred
+		return self.login_cred
 
 		# clear to signify end of process
 		self.clear_screen()
@@ -319,6 +325,7 @@ class CrawlerApp:
 
 		# get list of item UUIDs in DSpace collection
 		item_list = self.dsession.get_items(cid, False)
+		print(item_list)
 
 		# parse DOIs from items
 		doi_list = []
@@ -326,10 +333,11 @@ class CrawlerApp:
 			# get doi from each item and place in a list
 			# TODO fix get_item_metadata
 			meta = self.dsession.get_item_metadata(item)
-			doi = (meta['dc.identifier.other'])['value']	
-			doi_list.append(doi)
-
-			print('\t', doi)
+			if 'dc.metadata.other' in meta.keys():
+				tmp = (meta['dc.identifier.other'])[0]
+				doi = tmp['value']	
+				doi_list.append(doi)
+				print('\t', doi)
 
 		dchecker = doichecker()
 		dchecker.create_inheritance(doi_list)
@@ -337,12 +345,15 @@ class CrawlerApp:
 	# search a database using crawler by passing in the database to search and the query to run
 	def search(self, db=0, q='', csv_path=''):
 		export_toDSpace = False
+		uname = ''
+		psswd = '' 
+		baseurl = ''
 
 		# export results to DSpace if desired
 		selection = input('EXPORT TO DSPACE?(Y\\N):')
 		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
 			export_toDSpace = True
-			# DOI conflict handling
+			# if exporting results to dspace, make sure there are no DOI duplicates in DSpace by updating DOI checker
 			cid = ''
 			print('WARNING: If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
 			ans = input('Update DOI database?(Y/N):')
@@ -382,7 +393,7 @@ class CrawlerApp:
 		
 		# export to DSpace if flag is set
 		if export_toDSpace and self.logged_in:
-			a.export_to_dspace(cid=cid, uname=uname, passwd=psswd)
+			a.export_to_dspace(cid=cid, uname=self.uname, passwd=self.psswd)
 		elif export_toDSpace:
 			a.export_to_dspace(cid=cid, uname=login_cred[0], passwd=login_cred[1])
 

@@ -26,10 +26,10 @@ class doichecker:
 
     # If running from a different machine without access to the master key of seen DOIs, supplement with list of database contents
     def create_inheritance(self, doi_dict):
-        for doi in doi_dict.keys():
+        for doi in doi_dict:
             # make sure doi not already known to prevent database bloat
-            if not self.duplicate(doi_dict[doi]):
-                self.appenddoi(doi, target=1)
+            if not self.duplicate(doi):
+                self.appenddoi(doi, target=0) # add to fast access
 
 
     # return true if a duplicate doi is passed in

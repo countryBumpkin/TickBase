@@ -54,6 +54,9 @@ class DSpace:
     # Take in list of authors formatted as "last, first" and convert to list of dictionary objects
     # that can be imported to dspace.
     def _authors_to_dspace_object(self, author_str_list):
+        if author_str_list == None:
+            return []
+
         author_list = [] # list of dspace dictionaries
         for i in author_str_list:
             author = {
@@ -89,11 +92,11 @@ class DSpace:
         r = self._r_session.post(self.base_url+'authn/login', data=payload)
         
         if r.status_code != 200:
-            print('ERROR(', r.status_code, '): failed to reach ', self.base_url+'authn/login')
+            print('[ERROR](', r.status_code, '): failed to reach ', self.base_url+'authn/login')
             print(r.text)
             return False
         else:
-            print('successful authentication, HTTP code ', r.status_code)
+            print('[SUCCESS] authenticated, HTTP code ', r.status_code)
             self._bearer_tkn = r.headers['Authorization']
             self._r_session.headers.update({'Authorization': r.headers['Authorization'], 'X-XSRF-TOKEN': r.headers['DSPACE-XSRF-TOKEN']})
             return True
@@ -106,9 +109,9 @@ class DSpace:
 
 
     # get status of the user token/API as a boolean, true if connected
-    def get_status(self):
+    def get_status(self, debug=False):
         if self._bearer_tkn == '':
-            print('Warning: get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
+            print('[WARNING] get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
 
         r = self._r_session.get(self.base_url+'authn/status')
 
@@ -124,7 +127,8 @@ class DSpace:
 
         else: 
             json_out = r.json() # get json output
-            print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
+            if debug:
+                print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
             if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                 self._csrf_token = r.cookies['DSPACE-XSRF-COOKIE'] # update csrf token
 
@@ -245,6 +249,7 @@ class DSpace:
 
     # Get an array of all the item UUIDs in a collection
     def get_items(self, cid='', debug=False):
+        print("[WARNING] please wait, retrieving item IDs, may take a while for large collections")
         item_uuids = []
 
         # create url with {} for string formatting and page iteration
@@ -261,10 +266,14 @@ class DSpace:
             # set page
             r = self._r_session.get(url.format(i))
             # make sure request went through, otherwise throw error
-            if r.status_code != 200:
+            if r.status_code >= 400:
                 raise Exception('connnection to '+self.base_url+' failed')
                 print(r.text)
             else:
+                if debug:
+                    print("[SUCCESS]")
+                    print(r.text)
+
                 # update CSRF token if possible
                 if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                     self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
@@ -278,15 +287,18 @@ class DSpace:
             # get list of UUIDs for lookup
             item_uuids += self._parse_objects_for_items(items)
             # check limit
-            limit = page_data['totalPages'] 
+            page_limit = page_data['totalPages'] 
+            if debug: print("PAGE LIMIT = ", page_limit, " PAGE ", i , "/", page_limit)
             # increment page index
             i = i+1
 
         # print info about all communities returned
         if debug:
-            for i in r.json():
+            """for i in r.json():
                 print('ITEM \'{}\':'.format(i['name']))
                 print('\tUUID:', i['uuid'], '\n\tHANDLE:', i['handle'])
+            """
+            print("RETRIEVED ", len(item_uuids), " ITEMS")
 
         return item_uuids
 
@@ -379,12 +391,16 @@ class DSpace:
             if r.status_code != 200:
                 raise Exception('could not update item', r.text)
 
-    # create an item and add to collection
+    """
+        Create an item from basic metadata fields that are common across almost all 
+        databases and upload to DSpace collection.
+    """
     def create_item(self, cid, title, authors, description, doi):
-        # get supplemental metadata by resolving DOI
+        # get supplemental metadata by resolving DOI to get best version of metadata
         dres = DOIResolver()
+        sup_meta = {}
         if doi != '':
-            try:
+            try: # randomly resolving metadata has failed...
                 sup_meta = dres.get_meta(doi)
             except:
                 sup_meta = {}
@@ -398,11 +414,12 @@ class DSpace:
             abstract = ''
 
         # clean all text fields to remove HTML tags
-        description = BeautifulSoup(description, 'lxml').text
-        abstract = BeautifulSoup(abstract, 'lxml').text
-        title = BeautifulSoup(title, 'lxml').text
+        if description != None: description = BeautifulSoup(description, 'lxml').text
+        if abstract != None: abstract = BeautifulSoup(abstract, 'lxml').text
+        if title != None: title = BeautifulSoup(title, 'lxml').text
 
         # construct new item object with metadata using dublin core identifiers, convert json dict to string
+        # JSON format used as of DSpace 7
         payload = json.dumps({
           "name": title,
           "metadata": {
@@ -481,13 +498,13 @@ class DSpace:
         r = self._r_session.post(self.base_url+'core/items?owningCollection={}'.format(cid), headers={'content-type': 'application/json'}, data=payload)
 
         # check status of item post and print message if unsuccessful
-        if r.status_code != 200:
+        if r.status_code >= 400: # anything above 400 is a critical failure
             print('({})\n\t{}'.format(r.status_code, r.text))
         else:
             # update CSRF token if possible
             if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                 self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
-            print('SUCCESS: ', r.status_code)
+            print('[SUCCESS] ', r.status_code)
 
 
     # remove an item from the collection, requires item UUID
@@ -510,6 +527,7 @@ class DSpace:
     def empty_collection(self, cid):
         item_uuids = self.get_items(cid=cid)
         print(item_uuids)
+        print("NUM ITEMS RETRIEVED: ", len(item_uuids))
         for item in item_uuids:
             print(item)
             self.delete_item(item)

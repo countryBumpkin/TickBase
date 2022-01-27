@@ -92,6 +92,18 @@ class CrawlerApp:
 			print('[{}]\t{}'.format(i, db_str))
 			i = i + 1
 
+	# log in to DSpace if not logged in already
+	def _login(self):
+		# login/authenticate
+		uname, psswd, baseurl = self._get_login_credentials()
+		try:
+			self.dsession = DSpace(username=uname, passwd=psswd, base_url=baseurl) 
+			self.dsession.authenticate()
+			self.logged_in = True
+		except:
+			print('FAILED TO LOGIN')
+			return
+
 	# get a collection id from the user
 	def _get_cid(self):
 		cid = ''
@@ -99,7 +111,7 @@ class CrawlerApp:
 		# get collection id
 		confirmed = False
 		while not confirmed:
-			cid = input('enter CID:')
+			cid = self._print_cids()
 			print('CID Entered =', cid)
 			confirmation = input('confirm CID as correct?(Y\\N):')
 			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
@@ -114,6 +126,28 @@ class CrawlerApp:
 					return None
 
 		return cid
+
+	# print the CIDs that are available on the DSpace server and allow user to choose one
+	# which is then returned
+	def _print_cids(self):
+		if self.dsession == None or not self.logged_in:
+			self._login()
+
+		# print menu of collections available to modify
+		print("CHOOSE COLLECTION TO EDIT")
+		cid = ''
+		collections = self.dsession.get_collections(False) # set debug flag to false
+		#print(collections)
+		i = 0
+		for collection in collections:
+			print('[{}] {}: {}'.format(i, collection['name'], collection['uuid']))
+
+		selection = int(input('SELECT COLLECTION: '))
+		if selection in range(0, len(collections)):
+			cid = collections[selection]['uuid']
+
+		return cid
+
 
 	# get base url, username, password and return as a tuple
 	def _get_login_credentials(self):
@@ -166,7 +200,6 @@ class CrawlerApp:
 					print('canceling operation.')
 					return None
 
-		self.logged_in = True
 		self.uname = uname
 		self.psswd = passwd
 		self.login_cred = (uname, passwd, baseurl)
@@ -182,27 +215,10 @@ class CrawlerApp:
 		self.clear_screen()
 		# login/authenticate
 		if not self.logged_in:
-			uname, psswd, baseurl = self._get_login_credentials()
-			try:
-				self.dsession = DSpace(username=uname, passwd=psswd, base_url=baseurl) 
-				self.dsession.authenticate()
-			except:
-				print('FAILED TO LOGIN')
-				return
+			self._login()
 
-			self.logged_in = True
-
-		# print menu of collections available to modify
-		cid = ''
-		collections = self.dsession.get_collections(False) # set debug flag to false
-		#print(collections)
-		i = 0
-		for collection in collections:
-			print('[{}] {}: {}'.format(i, collection['name'], collection['uuid']))
-
-		selection = int(input('SELECT COLLECTION: '))
-		if selection in range(0, len(collections)):
-			cid = collections[selection]['uuid']
+		# have user choose a CID to work with
+		cid = self._get_cid()
 
 		menu = ['empty collection', 'print collection summary', 'get collection contents']
 
@@ -286,19 +302,15 @@ class CrawlerApp:
 		# get input to choose data file to export
 		selection = int(input('choose CSV to export:'))
 
-		cid = self._get_cid()
-
 		# export to dspace
 		if not self.logged_in:
-			uname, psswd, baseurl = self._get_login_credentials()
-			self.logged_in = True
+			self._login()
 
-			dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
-			success = dspace.authenticate()
-			if not success: 
-				print("ERROR in login")
-			# save DSpace session
-			self.dsession = dspace
+		# have user choose collection ID to use
+		self.dsession.get_collections()
+		cid = self._get_cid()
+
+		
 
 		if selection == 0:
 			for csv in csv_list:
@@ -316,14 +328,7 @@ class CrawlerApp:
 	def update_doi_checker(self, cid=''):
 		# login to DSpace
 		if not self.logged_in:
-			uname, psswd, baseurl = self._get_login_credentials()
-			dspace = DSpace(username=uname, passwd=psswd, base_url=baseurl)
-			success = dspace.authenticate()
-			if not success:
-				print("ERROR in login")
-
-			self.logged_in = True
-			self.dsession = dspace
+			self._login()
 
 		# get list of item UUIDs in DSpace collection
 		item_list = self.dsession.get_items(cid, False)
@@ -365,7 +370,7 @@ class CrawlerApp:
 
 			# ensure user logged in
 			if not self.logged_in:
-				uname, psswd, baseurl = self._get_login_credentials()
+				self._login()
 				if cid == '': # make sure cid is defined
 					cid = self._get_cid()
 

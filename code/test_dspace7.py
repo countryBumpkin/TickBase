@@ -126,7 +126,7 @@ class TestDSpace(unittest.TestCase):
         #a.get_collections()
         #a.get_bitstreams()
         #a.get_handle(handle = '123456789/3')
-        items = a.get_items(cid='59c66749-1ca0-40ee-844e-504c646f4632')
+        items = a.get_items(cid='59c66749-1ca0-40ee-844e-504c646f4632', debug=False)
         print(items)
         a.logout()
         return 1

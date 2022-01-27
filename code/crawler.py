@@ -211,10 +211,11 @@ class Crawler:
             # check connection status and throw error if unsuccessful
             if not dspc.get_status():
                 raise Exception('error in connection')
-
-            self.url_briefcase.export_to_dspace(cid=cid, dspace=dspc)
-            # close connection with dspace
-            dspc.logout()
+            else:
+                print("AUTHENTICATION CONFIRMED")
+                self.url_briefcase.export_to_dspace(cid=cid, dspace=dspc)
+                # close connection with dspace
+                dspc.logout()
 
 
     # add one dictionary to another

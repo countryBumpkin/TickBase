@@ -262,7 +262,7 @@ class CrawlerApp:
 
 		try:
 			i = 0
-			csv_file_list = os.listdir('searches')
+			csv_file_list = os.listdir('../searches')
 			if csv_file_list == []:
 				print('OUTPUT: no search option, but \'searches\' folder present, try creating CSV of search terms in that folder')
 				return
@@ -272,7 +272,7 @@ class CrawlerApp:
 				i = i + 1
 
 			choice = input('choose CSV search file: ')
-			filename = 'searches/' + csv_file_list[int(choice)]
+			filename = '../searches/' + csv_file_list[int(choice)]
 
 		except:
 			print('OUTPUT: no directory of search CSV files currently, try making \'searches\' folder with csv of query terms')
@@ -389,7 +389,6 @@ class CrawlerApp:
 
 		a = None
 		# gracefully exits from failure and allows continued execution
-		#try:
 		if csv_path != '':
 			a = Crawler(repository_interface=inter, csv_path=csv_path)
 			a.search_all()

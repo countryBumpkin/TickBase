@@ -88,7 +88,7 @@ class TestDSpace(unittest.TestCase):
         print("TESTING CREATE SINGLE ITEM")
         a = DSpace(username='sheneman@uidaho.edu', passwd='foo')
         a.authenticate()
-        a.get_status()
+        #a.get_status()
         a.create_item(cid='59c66749-1ca0-40ee-844e-504c646f4632', title='foo 2', authors=['H. G. Wells', 'Wells, H. G.'], description='test upload', doi='10.12345/123124')
         #a.delete_item('123456789/18')
         #a.get_items()

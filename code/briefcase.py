@@ -4,7 +4,7 @@ from dcxml import dcxml
 from bs4 import BeautifulSoup
 import os
 from collections import defaultdict
-
+import time
 '''
 	This is a data structure specifically for collecting lists of formatted article metadata. 
 	The Briefcase consists of a list of Document objects.
@@ -91,6 +91,8 @@ class Briefcase:
 	def export_to_dspace(self, cid='', dspace=None):
 		if dspace is None:
 			raise Exception('no dspace connection provided, use DSpace library to submit valid connection')
+		else:
+			dspace.authenticate()
 
 		if cid is None:
 			raise Exception('no cid, collection identifier, was specified')
@@ -104,6 +106,7 @@ class Briefcase:
 						description=doc['Abstract'],
 						doi=doc['DOI']
 						)
+			time.sleep(10) # sleep for 10 seconds
 
 	# print contents of the dataframe
 	def print(self):

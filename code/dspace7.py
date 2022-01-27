@@ -1,7 +1,7 @@
 """
     DSpace API 2.0
 
-    Compatible with DSpace 7.x backend.
+    Compatible with DSpace 7.x backend. See endpoint documentation at https://github.com/DSpace/RestContract/blob/main/endpoints.md
 
     @author:    Garrett Wells
     @date:      12/31/21
@@ -89,11 +89,11 @@ class DSpace:
         r = self._r_session.post(self.base_url+'authn/login', data=payload)
         
         if r.status_code != 200:
-            print('ERROR(', r.status_code, '): failed to reach ', self.base_url+'authn/login')
+            print('\t[ERROR] (', r.status_code, '): failed to reach ', self.base_url+'authn/login')
             print(r.text)
             return False
         else:
-            print('successful authentication, HTTP code ', r.status_code)
+            print('\t[SUCCESS] authenticated, HTTP code ', r.status_code)
             self._bearer_tkn = r.headers['Authorization']
             self._r_session.headers.update({'Authorization': r.headers['Authorization'], 'X-XSRF-TOKEN': r.headers['DSPACE-XSRF-TOKEN']})
             return True
@@ -108,7 +108,7 @@ class DSpace:
     # get status of the user token/API as a boolean, true if connected
     def get_status(self):
         if self._bearer_tkn == '':
-            print('Warning: get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
+            print('\t[WARNING] get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
 
         r = self._r_session.get(self.base_url+'authn/status')
 
@@ -129,15 +129,22 @@ class DSpace:
             return json_out['authenticated']
 
     '''
+        TODO: test for DSpace 7 compatibility
         Get the status of the connection to dspace and return a dictionary with the following information:
+            Note: below shows the tree structure if information is embedded in several layers of objects. 
 
-            okay: boolean state of connection, true if good connection
-            authenticated: true if the session has a valid JSESSIONID, can only be true if user has submitted email and passwd using /login
-            email: email of the user whose account was used for authentication
-            fullname: name/role associated with this account
-            apiVersion: version of the API running on server
-            sourceVersion: version of code on server
-            '''
+            _embedded: contains an eperson object with UUID and email
+                |
+                ----> eperson
+                            |
+                            ----> uuid
+                            |
+                            ----> email
+
+            okay: true if REST API is running, should never be false
+            authenticated: true if token is valid, false for no token or invalid token
+
+    '''
     def get_session_status(self):
         r = self._r_session.get(self.base_url+'authn/status')
         # update CSRF token
@@ -171,6 +178,7 @@ class DSpace:
 
 
     # Get an array of all the communities in the repository
+    # TODO: test this for DSpace7 compatibility
     def get_communities(self, debug=True):
         communities = []
         offset = 0
@@ -304,6 +312,7 @@ class DSpace:
 
 
     # update the metadata record for an item using a list structure or the doi of the item
+    # TODO: test this function for DSpace7
     def update_item(self, ditem, new_meta={}):
         doi = ''
         if ditem is {} and new_meta is {}:
@@ -484,7 +493,7 @@ class DSpace:
             print('({})\n\t{}'.format(r.status_code, r.text))
             r = self._r_session.post(self.base_url+'core/items?owningCollection={}'.format(cid), headers={'content-type': 'application/json'}, data=payload)
             if r.status_code <= 400:
-                print('SUCCESS: ', r.status_code)
+                print('\t[SUCCESS] ', r.status_code)
             else:
                 print('({})\n\t{}'.format(r.status_code, r.text))
 
@@ -492,7 +501,7 @@ class DSpace:
             # update CSRF token if possible
             if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                 self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
-            print('SUCCESS: ', r.status_code)
+            print('\t[SUCCESS] ', r.status_code)
 
 
     # remove an item from the collection, requires item UUID
@@ -521,13 +530,8 @@ class DSpace:
             print(item)
             self.delete_item(item)
 
-    '''
-        iterate through csv and convert each entry into a dspace 'item'
-        then create a new dspace collection and place items in the collection.
-
-        TODO: decide whether this is a helpful feature or not 
-    '''
-    def export_to_Briefcase(self, filepath):
+    # open csv and convert entries to Documents, then place Documents in a new Briefcase and return it
+    def csv_to_briefcase(self, filepath):
         # list of XML objects formatted as dspace 'items' to add to the repository
         items = []
 
@@ -543,4 +547,4 @@ class DSpace:
                 
                 case.add(doc.to_dictionary())
 
-                return case
+        return case

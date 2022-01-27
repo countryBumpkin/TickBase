@@ -31,11 +31,12 @@ from dspace7 import DSpace
 class CrawlerApp:
 
 	# login credentials for DSpace
-	logged_in = False
+	logged_in = False # state flag, should be set true only if authenticated with DSpace
 	login_cred = ()
 	uname = ''
 	psswd = ''
 	cid = ''
+	datadump_path = '../data_dump/' # default path to CSVs collected from repositories
 
 
 	# DSpace session stored from previous login
@@ -220,7 +221,7 @@ class CrawlerApp:
 		# have user choose a CID to work with
 		cid = self._get_cid()
 
-		menu = ['empty collection', 'print collection summary', 'get collection contents']
+		menu = ['empty collection', 'print collection summary (not implemented)', 'get collection contents (not implemented)']
 
 		i = 0
 		for item in menu:
@@ -283,6 +284,7 @@ class CrawlerApp:
 		choice = input('choose database: ')
 		self.search(db=choice, csv_path=filename)
 
+
 	# parse a csv file and upload to dspace
 	def convert_csv_to_dspace(self):
 		# print list of possible .csv data files to export
@@ -290,13 +292,13 @@ class CrawlerApp:
 		csv_list = []
 		try:
 			print('[0] upload all CSVs')
-			csv_list = os.listdir('../data_dump')
+			csv_list = os.listdir(self.datadump_path)
 			i = 1
 			for csv_str in csv_list:
 				print('[{}]'.format(i), csv_str)
 				i = i + 1
 		except:
-			print('failed to find folder \'data_dump\' in the current working directory')
+			print('failed to find folder \'../data_dump\' in the current parent directory')
 			return
 		
 		# get input to choose data file to export
@@ -310,19 +312,19 @@ class CrawlerApp:
 		self.dsession.get_collections()
 		cid = self._get_cid()
 
-		
-
-		if selection == 0:
+		# convert selected csv to Briefcase and then upload items to DSpace
+		if selection == 0: # convert all
 			for csv in csv_list:
-				case = self.dsession.export_to_Briefcase("data_dump/" + csv)
+				case = self.dsession.csv_to_briefcase(self.datadump_path + csv)
 				case.export_to_dspace(cid=cid, dspace=self.dsession)
 
-		else:		
-			case = self.dsession.export_to_Briefcase("data_dump/" + csv_list[selection-1])
+		else: # convert one		
+			case = self.dsession.csv_to_briefcase(self.datadump_path + csv_list[selection-1])
 			case.export_to_dspace(cid=cid, dspace=self.dsession)
 
 		# clear screen to signify end of process
 		self.clear_screen()
+
 
 	# update system doi checker with all known item DOIs from a collection
 	def update_doi_checker(self, cid=''):

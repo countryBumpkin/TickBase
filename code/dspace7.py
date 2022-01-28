@@ -284,7 +284,7 @@ class DSpace:
             # get list of UUIDs for lookup
             item_uuids += self._parse_objects_for_items(items)
             # check limit
-            limit = page_data['totalPages'] 
+            page_limit = page_data['totalPages'] 
             # increment page index
             i = i+1
 

@@ -1,4 +1,9 @@
 '''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
+'''
     Converts HTML Dublin Core (DC) object to a clean DSpace style DC object. 
 
     Don't currently think any of the interfaces rely on this

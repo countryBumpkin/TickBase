@@ -1,5 +1,8 @@
 # https://datadryad.org/api/v2/docs/#/default/get_search
-
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
 import requests
 import pprint
 from portal_interface import Portal

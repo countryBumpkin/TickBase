@@ -1,3 +1,8 @@
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
 import d1_client
 from briefcase import Document
 import requests

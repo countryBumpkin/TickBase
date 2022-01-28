@@ -1,3 +1,8 @@
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
 import csv
 
 csv_path = 'keywordsAll.csv'

@@ -1,3 +1,8 @@
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
 from portal_interface import Portal
 from briefcase import Document
 import requests

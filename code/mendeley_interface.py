@@ -1,3 +1,8 @@
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
 # found here: https://mendeley-python.readthedocs.io/en/latest/usage.html
 from portal_interface import Portal
 from mendeley import Mendeley

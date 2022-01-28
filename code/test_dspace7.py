@@ -1,3 +1,11 @@
+'''
+    
+    @author Garrett Wells
+    @date   12/31/2021
+
+'''
+
+
 from dcxml import dcxml
 from dspace7 import DSpace
 from crawler import Crawler

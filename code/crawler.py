@@ -1,3 +1,10 @@
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
+
+
 # libraries external to this project
 from bs4 import BeautifulSoup
 from collections import defaultdict

@@ -1,3 +1,8 @@
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
+
 # documentation found here: https://datasearch.elsevier.com/api/docs#/search/search
 from portal_interface import Portal
 from mendeley import Mendeley

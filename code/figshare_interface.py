@@ -1,5 +1,9 @@
-# documentation found here: https://docs.figshare.com/#figshare_documentation_api_description
+'''
+    @author Garrett Wells
+    @date   12/31/2021
+'''
 
+# documentation found here: https://docs.figshare.com/#figshare_documentation_api_description
 # Consumer ID: 6d4f04a795126fca09133493ede5563c33c957e3
 # Consumer Secret: d4a3f0d1e710b1636d5ee171ed33ec4705bfbe8cea15b952e8b5134f6f57384e4238d9762b55a711a895e6037ed46f2066844f7714c723b39ce57977b4c1958e
 from portal_interface import Portal

@@ -1,3 +1,8 @@
+'''
+    Converts HTML Dublin Core (DC) object to a clean DSpace style DC object. 
+
+    Don't currently think any of the interfaces rely on this
+'''
 class dcxml:
 
     _dspace_template_keys = [

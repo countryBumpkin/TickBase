@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 import os
 from collections import defaultdict
 import time
+
+
 '''
 	This is a data structure specifically for collecting lists of formatted article metadata. 
 	The Briefcase consists of a list of Document objects.
@@ -21,19 +23,24 @@ class Briefcase:
 		self.container = self.container.append(row, ignore_index=True)
 		self.containerDict.append(row)
 		# clean frame so that we don't have duplicate sources
+		# Note: replaced by doichecker.py
 		#self.container.drop_duplicates( subset=['URL'], inplace=True)
 
+	# returns true if there are no documents in this structure
 	def is_empty(self):
 		return self.container.empty
 
+	# exports the metadata in the documents into an excel file
 	def to_excel(self, filename='briefcase'):
 		self.container.to_excel(filename, index=False)
 
+	# exports metadata into a CSV file
 	def to_csv(self, filename='briefcase'):
 		print('exporting DATA from BRIEFCASE to CSV')
 		self.container.to_csv(filename, index=False)
 
 	# convert briefcase contents to a DuraSpace Simple Archive containing metadata in dublin core XML files
+	# WARNING not implemented, artifact from DSpace 6
 	def to_batch(self, archive_name='briefcase'):
 		# make new archive directory
 		try:
@@ -108,17 +115,18 @@ class Briefcase:
 						)
 			time.sleep(10) # sleep for 10 seconds
 
-	# print contents of the dataframe
+	# debug function, print contents of the dataframe
 	def print(self):
 		print('\nBriefcase Contains: ---------------\n', self.container)
 
 '''
 	data holder for data parsed from data repos, allows conversion from repo metadata tags to 
-	bconsistent metadata tags
+	be consistent metadata tags
 '''
 class Document:
 
 	def __init__(self, title='', authors='', link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown', date=''):
+		# save data in member variables
 		self.title = title
 		self.authors = authors
 		self.link = link
@@ -140,21 +148,27 @@ class Document:
 		self.data['DOI'] = doi
 		self.data['Datatype'] = datatype
 		self.data['Date'] = date
-		# remove html from the fields above
+
+		# remove html from the fields above, assume that authors, keywords, and other small text fields will not have HTML
 		self.remove_html()
 
+	# return the document title as string
 	def get_title(self):
 		return self.data['Title']
 
+	# return the document DOI as string
 	def get_doi(self):
 		return self.data['DOI']
 
+	# return the URL to the document, note this may be empty for some sources
 	def get_link(self):
 		return self.data['Link']
 
+	# return the URL to the source as a string
 	def get_source(self):
 		return self.data['Source']
 
+	# use beautiful soup to remove HTML tags such as <b></b> for bolded search terms
 	def remove_html(self):
 		# if strings are not none, check for html and remove
 		if self.data['Title'] != None:

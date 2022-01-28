@@ -1,5 +1,8 @@
 import requests
 
+'''
+    Interface definition for data repositories.
+'''
 class Portal:
 
     # authenticate if necessary, set base url

@@ -1,6 +1,9 @@
 from portal_interface import Portal
 import requests
 
+'''
+    This interface is not ready to work currently. Searches rquire using a paid endpoint or making your own spider for web crawling.
+'''
 class GScholar(Portal):
 
     def __init__(self):

@@ -4,6 +4,10 @@ import requests
 from portal_interface import Portal
 import xml.etree.ElementTree as ET
 
+
+'''
+    Interface for querying LTER data repository. https://lternet.edu/
+'''
 class ILTER(Portal):
 
     def __init__(self):

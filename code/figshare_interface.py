@@ -9,7 +9,11 @@ import json
 import pprint
 
 '''
-    This class provides interface for running queries on the figshare data repository
+
+    This class provides interface for running queries on the figshare data repository. Requires application registration to acquire client id and client secret to authenticate. 
+
+    To do this and access API documentation visit: https://docs.figshare.com/#figshare_documentation_oauth
+
 '''
 class IFigshare(Portal):
 

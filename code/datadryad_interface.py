@@ -5,6 +5,9 @@ import pprint
 from portal_interface import Portal
 from briefcase import Document
 
+'''
+    Interface for querying Data Dryad data repository. https://datadryad.org/stash/
+'''
 class IDataDryad(Portal):
 
     def __init__(self):

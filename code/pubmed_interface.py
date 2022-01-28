@@ -18,6 +18,7 @@ class IPubMed(Portal):
     def get_code(self, response):
         return response.status_code
 
+    # make list of author objects and return it
     def _get_authors(self, author_list):
         authors_list = []
         for i in author_list:
@@ -25,6 +26,7 @@ class IPubMed(Portal):
 
         return authors_list
 
+    # return a list of authors with names formatted in as 'last, first'
     def _get_authors_str(self, author_list):
         authors = ''
         i = 0

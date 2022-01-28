@@ -81,7 +81,7 @@ class ISpringer(Portal):
             search_string = '?q={}&s={}&p=100&api_key={}'.format(key, i*100, self.api_key)
             r = requests.get(baseURL.format(search_string))
 
-            if r.status_code < 400:
+            if r.status_code < 400: # request success
                 # parse results and store in list
                 r_json = r.json()
                 print('RAW DOC\n\t', r_json, '\n\t', type(r_json))
@@ -93,11 +93,10 @@ class ISpringer(Portal):
                 records = r_json['records']
 
                 for item in records:
-                    #if content_filter is not 'None' and content_filter != item['contentType']:
                     print('RAW DOC\n\t', item)
                     docs.append(self.__convert_to_Document__(item))
 
-            else:
+            else: # request failure
                 print('page not found')
                 break
             # increment the number of pages iterated through

@@ -9,7 +9,7 @@ import pprint
 import time
 
 # libraries written for this project
-    # interfaces
+# interfaces
 from gscholar_interface import GScholar
 from mendeley_interface import IMendeley
 from mendeleydata_interface import IMendeley_Data
@@ -27,7 +27,9 @@ from doichecker import doichecker
 from dspace7 import DSpace
 
 
-
+'''
+    Implements the object for running keyword queries on data repositories using the unified interface described in portal_interface.py. 
+'''
 class Crawler:
     dchecker = doichecker()
 
@@ -75,23 +77,24 @@ class Crawler:
                     else:
                         continue
 
-                # store results in pandas table
-                t0 = time.time()
-                self.build_table(search_result=r)
-                print('... built table in ', time.time() - t0, ' seconds\n')
-                # test writing results to table
+                # store results in briefcase for export later
+                t0 = time.time() # save operation start time
+                self.build_table(search_result=r) # build table of metadata/html content
+                print('... built table in ', time.time() - t0, ' seconds\n') # print timing info for debug
+
+                # test writing results to excel table
                 #self.export_to_excel(key)
-                t0 = time.time()
+
+                t0 = time.time() # save operation start time
                 self.export_to_csv(key)
-                print('... exported to csv in ', time.time() - t0, ' seconds\n')
-                #self.export_to_batch(key)
+                print('... exported to csv in ', time.time() - t0, ' seconds\n') # print timing info for debug
 
                 # if we are searching multiple terms, pause 2 min to prevent locking server
                 if rows > 1 or cols > 1:
                     time.sleep(120.0)
 
         # FINAL CLEANUP
-        # save collected DOIs to file for later
+        # save collected DOIs from fast access to file for later
         self.dchecker.save_fa_file()
         print('\tSUMMARY DICTIONARY:', final_list)
 
@@ -101,13 +104,14 @@ class Crawler:
         self.search(self.search_keys)
 
 
-    # retrieve all links from search results
+    # retrieve all links from search results in a briefcase object
     def build_table(self, search_result):
         print('BUILDING TABLE')
         # most interfaces return list of document objects
         type, output = self.interface.get_content(search_result)
 
         # check format of search output and process results
+        # list = Document object from briefcase.py
         if type == 'json':
             print(output)
 
@@ -117,12 +121,10 @@ class Crawler:
                 if lnkd_url != 'javascript:void(0)' and lnkd_url != search_result.url:
                     # store url in data structure
                     self.url_briefcase.add({'URL':lnkd_url, 'publication_date': '{:%d-%m-%Y}'.format(datetime.datetime.today())})
-                    #self.url_briefcase.print()
 
         elif type == 'list' and search_result is not None:
             for item in search_result:
                 self.url_briefcase.add(item.data)
-                #self.url_briefcase.print()
 
 
     # parse an html document for all hyper links
@@ -243,61 +245,70 @@ class Crawler:
             warnings.simplefilter("ignore", category=UserWarning)
 
 
-# implements tests  for the various interfaces that have been developed to search databases
+'''
+
+    Implements tests for the various interfaces that have been developed to search databases.
+
+    Currently tests are limited to verifying that the given interface can perform a full, uninterrupted series of queries
+    using the search keys provided in the CSV
+
+'''
 class CrawlTester:
+
+    # default path to test CSV
+    test_csv_path = '../searches/test_search.csv' 
 
     # test google scholar interface with the crawler
     def test_GScholar(self):
         gs = GScholar()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     # test the mendeley interface with the crawler
     def test_Mendeley(self):
         gs = IMendeley()
-        a = Crawler(repository_interface=gs, csv_path="searches/test_search.csv")
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     # test the mendeley data portal interface with the crawler
     def test_MendeleyData(self):
         gs = IMendeley_Data()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_Figshare(self):
         gs = IFigshare()
-        #a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_DataDryad(self):
         gs = IDataDryad()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_KNB(self):
         gs = IKNB()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_SpringerNature(self):
         gs = ISpringer()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_Neon(self):
         gs = INeon()
-        a = Crawler(repository_interface=gs, csv_path='test_search.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_PubMed(self):
         gs = IPubMed()
-        a = Crawler(repository_interface=gs, csv_path='test_search.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     def test_LTER(self):
         gs = ILTER()
-        a = Crawler(repository_interface=gs, csv_path='search_keys.csv')
+        a = Crawler(repository_interface=gs, csv_path=test_csv_path)
         a.search_all()
 
     # test briefcase
@@ -307,17 +318,3 @@ class CrawlTester:
             folder.add({'URL' : 'line'.format(i)})
 
         folder.print()
-
-
-#test = CrawlTester()
-#test.test_GScholar()
-#test.test_Mendeley()
-#test.test_MendeleyData()
-#test.test_Figshare()
-#test.test_DataDryad()
-#test.test_KNB()
-#test.test_SpringerNature()
-#test.test_Neon()
-#test.test_PubMed()
-#test.test_LTER()
-#test.test_briefcase()

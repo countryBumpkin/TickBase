@@ -23,6 +23,7 @@ class IMendeley_Data(Portal):
         self.tag = 'mendeleydata'
         self.result_type = 'data'
 
+
     # use Mendeley library to create a new session that can be used to access the Mendeley API
     def __authorize__(self):
         mend = Mendeley(client_id=self.client_id, client_secret=self.client_secret)
@@ -30,9 +31,50 @@ class IMendeley_Data(Portal):
         self.session = auth.authenticate()
         return self.session
 
+    def _get_authors(self, authors_list):
+        if authors_list is None:
+            return None
+
+        author_list = []
+
+        # reformat names and place in output list
+        for persn in authors_list:
+            if persn is not None:
+                author_list.append(persn['name'])
+
+        return author_list
+    
+
+    # parse a list of mendeley.common.Person objects to get the associated authors
+    def _get_authors_str(self, auth_list):
+        #print(type(auth_list), auth_list)
+        #auth_list = auth_list[0]
+        #print(type(auth_list), type(auth_list.first_name))
+        authors = ''
+        i = 0
+
+        if auth_list is None:
+            return 'None'
+
+        for person in auth_list:
+            if person is not None:
+                if i == 0:
+                    authors = person['name']
+                else:
+                    authors = authors + ', ' + person['name']
+                i = i + 1
+
+        return authors
+
+
     # override the base implementation and return success by default
     def get_code(self):
         return 200
+
+    # return the content retrieved by query and give the type of data, list/Document
+    def get_content(self, response):
+        return ('list', response)
+
 
     # use the Mendeley API to get the paginated results of a search
     # returns a list of all data objects parsed as Documents
@@ -68,8 +110,6 @@ class IMendeley_Data(Portal):
         # check that result is good
         if r.status_code == 200:
             for item in response_list:
-                #print(item['containerTitle'])
-                #print('\t', item)
                 # convert to Document list
                 print('DOCUMENT')
                 keys = item.keys()
@@ -106,55 +146,3 @@ class IMendeley_Data(Portal):
                 print('ERROR: can\'t get status code')
 
         return results
-
-    def get_content(self, response):
-        return ('list', response)
-
-    def _get_authors(self, authors_list):
-        if authors_list is None:
-            return None
-
-        author_list = []
-
-        # reformat names and place in output list
-        for persn in authors_list:
-            if persn is not None:
-                author_list.append(persn['name'])
-                """
-                wrds = persn['name'].split() # turn name into array of words, formatted "first middle last"
-                # reformat as "last, first middle"
-                last_nm = wrds[len(wrds) - 1]
-                # all words before last name should follow comma
-                first_middle = ''
-                for i in range(0, len(wrds) - 1):
-                    if i == 0:
-                        first_middle = wrds[i]
-                    else:
-                        first_middle = first_middle + ' ' + wrds[i]
-                # combine last name and first name str into one and append
-                author_list.append(last_nm + ', ' + first_middle)
-                """
-
-        return author_list
-    
-
-    # parse a list of mendeley.common.Person objects to get the associated authors
-    def _get_authors_str(self, auth_list):
-        #print(type(auth_list), auth_list)
-        #auth_list = auth_list[0]
-        #print(type(auth_list), type(auth_list.first_name))
-        authors = ''
-        i = 0
-
-        if auth_list is None:
-            return 'None'
-
-        for person in auth_list:
-            if person is not None:
-                if i == 0:
-                    authors = person['name']
-                else:
-                    authors = authors + ', ' + person['name']
-                i = i + 1
-
-        return authors

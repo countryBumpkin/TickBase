@@ -37,6 +37,7 @@ class CrawlerApp:
 	psswd = ''
 	cid = ''
 	datadump_path = '../data_dump/' # default path to CSVs collected from repositories
+	searches_path = '../searches/'	# default path to CSVs of search keywords
 
 
 	# DSpace session stored from previous login
@@ -263,7 +264,7 @@ class CrawlerApp:
 
 		try:
 			i = 0
-			csv_file_list = os.listdir('../searches')
+			csv_file_list = os.listdir(self.searches_path)
 			if csv_file_list == []:
 				print('OUTPUT: no search option, but \'searches\' folder present, try creating CSV of search terms in that folder')
 				return
@@ -273,7 +274,7 @@ class CrawlerApp:
 				i = i + 1
 
 			choice = input('choose CSV search file: ')
-			filename = '../searches/' + csv_file_list[int(choice)]
+			filename = self.searches_path + csv_file_list[int(choice)]
 
 		except:
 			print('OUTPUT: no directory of search CSV files currently, try making \'searches\' folder with csv of query terms')
@@ -351,32 +352,35 @@ class CrawlerApp:
 		dchecker = doichecker()
 		dchecker.create_inheritance(doi_list)
 
+
+
 	# search a database using crawler by passing in the database to search and the query to run
 	def search(self, db=0, q='', csv_path=''):
-		export_toDSpace = False
-		uname = ''
-		psswd = '' 
-		baseurl = ''
+		export_toDSpace = False # set this flag to upload search results to DSpace
 
-		# export results to DSpace if desired
+		# have user set export_toDSpace flag
 		selection = input('EXPORT TO DSPACE?(Y\\N):')
 		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
 			export_toDSpace = True
-			# if exporting results to dspace, make sure there are no DOI duplicates in DSpace by updating DOI checker
 			cid = ''
-			print('WARNING: If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
+
+			# have user choose Y/N update doilist.csv with pre-existing DOIs of items in target DSpace collection
+			# if N: DOIs retrieved will only be compared to whatever is already in doilist.csv
+			print('\t[WARNING] If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
 			ans = input('Update DOI database?(Y/N):')
-			if ans == 'Y' or ans == 'y' or ans == 'yes' or ans == 'Yes':
+			if ans == 'Y' or ans == 'y' or ans == 'yes' or ans == 'Yes': # update doilist.csv
 				cid = self._get_cid() # user enter cid
 				self.update_doi_checker(cid) # create file with all DOIs
+			# else: do nothing
 
-			# ensure user logged in
+			# ensure user logged in and authenticated with DSpace for upload
 			if not self.logged_in:
 				self._login()
-				if cid == '': # make sure cid is defined
+				if cid == '': # make sure target collection ID is defined
 					cid = self._get_cid()
 
 		#print('searching database', db, 'for', q, 'or using', csv_path)
+
 		# interface object references
 		interface_list = [GScholar, IMendeley, IMendeley_Data, IFigshare, IDataDryad, IKNB, ISpringer, INeon, IPubMed, ILTER]
 
@@ -384,59 +388,57 @@ class CrawlerApp:
 		inter = None
 		if int(db) in range(len(interface_list)):
 			inter = interface_list[int(db)]()
-		else:
-			#print('invalid db choice')
+
+		else: # invalid database choice, out of bounds
 			print('\tdb =', db, '/', range(len(interface_list)))
 			return
 
-		a = None
+
+		# init Crawler object for searching the chosen interface
+		crwlr = None
 		# gracefully exits from failure and allows continued execution
-		if csv_path != '':
-			a = Crawler(repository_interface=inter, csv_path=csv_path)
-			a.search_all()
+		if csv_path != '': # init Crawler with provided params
+			crwlr = Crawler(repository_interface=inter, csv_path=csv_path)
+			crwlr.search_all()
 		
-		else:
-			a = Crawler(repository_interface=inter, csv_path='')
-			a.search(keywords=[[q]])
+		else: # init Crawler with default params
+			# sets crawler to run searches and just save data in briefcase, csv conversion can be done later using export_to_csv()
+			crwlr = Crawler(repository_interface=inter, csv_path='')
+			crwlr.search(keywords=[[q]])
 		
-		# export to DSpace if flag is set
+		# export to DSpace if flag is set and logged in, otherwise try to login with saved credentials
 		if export_toDSpace and self.logged_in:
-			a.export_to_dspace(cid=cid, uname=self.uname, passwd=self.psswd)
-		elif export_toDSpace:
-			a.export_to_dspace(cid=cid, uname=login_cred[0], passwd=login_cred[1])
+			crwlr.export_to_dspace(cid=cid, uname=self.uname, passwd=self.psswd)
+		# else: do nothing, data is exported to csv by default as a local backup
 
 		# clear screen to signify end of process
 		self.clear_screen()
 
 
-
-	'''
-		print menu to command line, take input, execute input for program
-	'''
+	# print menu to command line, take input, execute input for program
 	def control_loop(self):
-
+		# function pointer list 
 		function_list = [self.query_single, self.query_multiple, self.convert_csv_to_dspace, self.manage_collection]
-		self.print_header()
 
 		flag = True
 
 		while(flag):
-			# print menu
+			# print main menu
 			self.print_header()
 			self.print_menu()
 			# get/check menu choice
 			selection = input('EXECUTE: ')
 
 			# validate input
-			if selection == '0' or selection == 'q' or selection == 'quit' or selection == 'exit':
+			if selection == '0' or selection == 'q' or selection == 'quit' or selection == 'exit': # exit program
 				print('Goodbye!')
 				return
 
-			elif int(selection) in range(len(function_list) + 1):
-				#print('valid selection, running')
+			elif int(selection) in range(len(function_list) + 1): # run function
 				s_code = int(selection) - 1 # offset by one because first option is exit...
 				function_list[s_code]() # run selected function
-			else:
+
+			else: # else print error message
 				print('incoherent input: \'', selection, '\'')
 				
 

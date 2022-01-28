@@ -4,6 +4,14 @@ from mendeley import Mendeley
 from briefcase import Document
 import requests
 
+'''
+    An interface for performing queries on the Mendeley data repository.
+
+    Requires client authentication to use. Currently this is configured by Garrett Wells (garrettrwells@gmail.com) but will likely expire in the future.
+        To authentication tutorial/info:    https://dev.mendeley.com/reference/topics/authorization_client_credentials.html
+        To access Developer Portal:         https://dev.mendeley.com/reference/topics/authorization_overview.html
+
+'''
 class IMendeley(Portal):
 
     def __init__(self):

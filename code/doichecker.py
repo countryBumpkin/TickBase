@@ -86,10 +86,3 @@ class doichecker:
             with open('doilist.csv', 'a') as file:
                 file.write(doi + ',\n')
             file.close()
-
-    """
-    # called if used in with clause
-    def __exit__(self):
-        self.save_fa_file()
-        print('called save fast access to file')
-    """

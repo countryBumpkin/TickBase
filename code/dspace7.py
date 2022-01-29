@@ -12,6 +12,10 @@ import csv
 import json
 import requests
 import warnings
+import ast
+from colorama import Fore
+import messages
+
 from bs4 import BeautifulSoup
 from doiresolver import DOIResolver
 from briefcase import Briefcase
@@ -88,12 +92,12 @@ class DSpace:
 
         r = self._r_session.post(self.base_url+'authn/login', data=payload)
         
-        if r.status_code != 200:
-            print('\t[ERROR] (', r.status_code, '): failed to reach ', self.base_url+'authn/login')
+        if r.status_code >= 400:
+            print('\t' + messages.ERROR + '(', r.status_code, '): failed to reach ', self.base_url+'authn/login')
             print(r.text)
             return False
         else:
-            print('\t[SUCCESS] authenticated, HTTP code ', r.status_code)
+            print('\t' + messages.SUCCESS + ' authenticated, HTTP code', r.status_code)
             self._bearer_tkn = r.headers['Authorization']
             self._r_session.headers.update({'Authorization': r.headers['Authorization'], 'X-XSRF-TOKEN': r.headers['DSPACE-XSRF-TOKEN']})
             return True
@@ -108,19 +112,18 @@ class DSpace:
     # get status of the user token/API as a boolean, true if connected
     def get_status(self):
         if self._bearer_tkn == '':
-            print('\t[WARNING] get_status() not conclusive because you are not logged in currently.\nIf login is not required you may still be able to use server, but you can\'t use this function.')
+            print('\t' + messages.WARNING + ' get_status() not conclusive because you are not logged in currently.\n\t\t\tIf login is not required you may still be able to use server, but you can\'t use this function.')
 
         r = self._r_session.get(self.base_url+'authn/status')
 
         if r.status_code >= 400:
-            print('(', r.status_code, ') AUTHN STATUS \n\t', 'False')
+            print('\t' + messages.ERROR + ' (', r.status_code, ') AUTHN STATUS: FALSE')
             print(r.text)
-            if r.status_code < 400: print('\tCSRF: ', self._csrf_token, '\n\tAuthorization: ', self._bearer_tkn)
             return False
 
         else: 
             json_out = r.json() # get json output
-            print('(', r.status_code, ') AUTHN STATUS \n\t', json_out['authenticated'])
+            print('\t' + messages.SUCCESS + ' (', r.status_code, ') AUTHN STATUS', Fore.CYAN, json_out['authenticated'], Fore.RESET)
             # update CSRF token if available
             if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                 self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
@@ -412,6 +415,7 @@ class DSpace:
         payload = json.dumps({
           "name": title,
           "metadata": {
+            # authors expected to be array of names in last, first format
             "dc.contributor.author": self._authors_to_dspace_object(authors),
             "dc.date.issued": [
               {
@@ -484,7 +488,7 @@ class DSpace:
           "type": "item"
         })
 
-        print('CREATING NEW DSPACE ITEM')
+        print(Fore.YELLOW + 'CREATING NEW DSPACE ITEM' + Fore.RESET)
 
         r = self._r_session.post(self.base_url+'core/items?owningCollection={}'.format(cid), headers={'content-type': 'application/json'}, data=payload)
 
@@ -493,15 +497,15 @@ class DSpace:
             print('({})\n\t{}'.format(r.status_code, r.text))
             r = self._r_session.post(self.base_url+'core/items?owningCollection={}'.format(cid), headers={'content-type': 'application/json'}, data=payload)
             if r.status_code <= 400:
-                print('\t[SUCCESS] ', r.status_code)
+                print('\t' + messages.SUCCESS, r.status_code)
             else:
-                print('({})\n\t{}'.format(r.status_code, r.text))
+                print('\t' + messages.ERROR + '({})\n\t{}'.format(r.status_code, r.text))
 
         else:
             # update CSRF token if possible
             if 'DSPACE-XSRF-COOKIE' in r.cookies.keys():
                 self._r_session.headers.update({'DSPACE-XSRF-COOKIE': r.cookies['DSPACE-XSRF-COOKIE'], 'X-XSRF-TOKEN': r.cookies['DSPACE-XSRF-COOKIE']})
-            print('\t[SUCCESS] ', r.status_code)
+            print('\t' + messages.SUCCESS, r.status_code)
 
 
     # remove an item from the collection, requires item UUID
@@ -540,11 +544,23 @@ class DSpace:
         # currently just prints out the key word
         with open(filepath, 'r') as csv_file:
             r = csv.reader(csv_file)
+            i = 0
             for row in r:
-                doc = Document(title=row[7], 
-                    authors=row[1], link='', abstract=row[0], 
-                    source=row[6], keywords=row[5], doi=row[2], datatype=row[3], date=row[4])
+                if i == 0:
+                    i = 1
+                    continue # skip the first row, which contains column names
+
+                # convert authors string to array
+                authors_arr = []
+                row[1] = row[1].strip()
+                if row[1] != ' ' and row[1] != '' and row[1] != None:
+                    authors_arr = ast.literal_eval(row[1])
+
+                doc = Document(title=row[0], 
+                    authors=authors_arr, link='', abstract=row[4], 
+                    source=row[2], keywords=row[5], doi=row[6], datatype=row[7], date=row[8])
                 
                 case.add(doc.to_dictionary())
+                i = i+1
 
         return case

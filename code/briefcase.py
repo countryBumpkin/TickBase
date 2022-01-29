@@ -115,7 +115,7 @@ class Briefcase:
 			dspace.create_item(
 						cid=cid,
 						title=doc['Title'],
-						authors=doc['Authors'],
+						authors=doc['Authors'], # should be array
 						description=doc['Abstract'],
 						doi=doc['DOI']
 						)
@@ -131,7 +131,7 @@ class Briefcase:
 '''
 class Document:
 
-	def __init__(self, title='', authors='', link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown', date=''):
+	def __init__(self, title='', authors=[], link='https://default_link', abstract='', source='', keywords='', doi='', datatype='unkown', date=''):
 		# save data in member variables
 		self.title = title
 		self.authors = authors

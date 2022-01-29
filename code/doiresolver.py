@@ -103,7 +103,7 @@ class DOIResolver:
 			['type', 'id', 'categories', 'language', 'author', 'issued', 'abstract', 'DOI', 'publisher', 'title', 'URL', 'copyright', 'version', 'contributor', 'indexed', 'reference-count', 'content-domain', 'created', 'source', 'is-referenced-by-count', 'prefix', 'member', 'container-title', 'original-title', 'deposited', 'score', 'subtitle', 'short-title', 'references-count', 'relation']
 	'''
 	def get_meta(self, doi):
-		print('DOI:\n\t', doi)
+		#print('DOI:\n\t', doi)
 		
 		if doi == '':
 			raise Exception('Empty DOI')

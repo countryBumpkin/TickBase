@@ -10,6 +10,8 @@
 import os
 import csv
 import getpass
+from colorama import Fore, Back, Style
+import messages
 
 from crawler import Crawler
 from gscholar_interface import GScholar
@@ -44,6 +46,7 @@ class CrawlerApp:
 	dsession = None
 
 	def __init__(self):
+		#init() # enable printing colors on windows using ANSI escape sequences, just a bit of fun :)
 		dsession = None
 		self.logged_in = False
 		self.control_loop()
@@ -52,12 +55,12 @@ class CrawlerApp:
 	def print_header(self):
 		self.clear_screen()
 
-		header = 	    "_________                         .__                  \n"\
+		header = 	    Fore.GREEN + "_________                         .__                  \n"\
 						"\_   ___ \_______ _____  __  _  __|  |   ____   ______  \n"\
 						"/    \  \/\_  __ \__   \ \ \/ \/ /|  |  / __ \_  __   \ \n"\
 						"\     \____|  | \/ / __ \_\     / |  |__\  ___/ |  | \/ \n"\
 						" \______  /|__|   (____  / \/\_/  |____/ \___  >|__|    \n"\
-						"        \/             \/                    \/         \n"\
+						"        \/             \/                    \/         \n\x1b[0m"\
 				 		'\nCRAWLER: a scientific database search program'\
 				 		'\nby Garrett Wells for Tick Base 2021'
 
@@ -97,14 +100,19 @@ class CrawlerApp:
 	# log in to DSpace if not logged in already
 	def _login(self):
 		# login/authenticate
-		uname, psswd, baseurl = self._get_login_credentials()
-		try:
-			self.dsession = DSpace(username=uname, passwd=psswd, base_url=baseurl) 
-			self.dsession.authenticate()
-			self.logged_in = True
-		except:
-			print('FAILED TO LOGIN')
-			return
+		while(True):
+			uname, psswd, baseurl = self._get_login_credentials()
+			try:
+				self.dsession = DSpace(username=uname, passwd=psswd, base_url=baseurl) 
+				self.logged_in = self.dsession.authenticate()
+				if self.logged_in: # success
+					print('\t', messages.SUCCESS, ' ' + Fore.MAGENTA + uname, Fore.RESET + ' is logged in!', sep='')
+					return
+				else: # failure, notify and retry
+					print('\t', messages.ERROR, ' ' + Fore.MAGENTA + uname, Fore.RESET + ' could not login, please re-enter username and password to try again', sep='')
+
+			except: # if fail, print and retry
+				print('\tl', messages.ERROR, ' login failed, please check credentials and try again', sep='')
 
 	# get a collection id from the user
 	def _get_cid(self):
@@ -115,7 +123,7 @@ class CrawlerApp:
 		while not confirmed:
 			cid = self._print_cids()
 			print('CID Entered =', cid)
-			confirmation = input('confirm CID as correct?(Y\\N):')
+			confirmation = input(messages.PRMPT + 'confirm CID as correct?(Y\\N):' + Fore.RESET)
 			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
 				confirmed = True
 
@@ -136,7 +144,7 @@ class CrawlerApp:
 			self._login()
 
 		# print menu of collections available to modify
-		print("CHOOSE COLLECTION TO EDIT")
+		print(messages.PRMPT + "CHOOSE COLLECTION TO EDIT" + Fore.RESET)
 		cid = ''
 		collections = self.dsession.get_collections(False) # set debug flag to false
 		#print(collections)
@@ -144,7 +152,7 @@ class CrawlerApp:
 		for collection in collections:
 			print('[{}] {}: {}'.format(i, collection['name'], collection['uuid']))
 
-		selection = int(input('SELECT COLLECTION: '))
+		selection = int(input(messages.PRMPT + 'SELECT COLLECTION: ' + Fore.RESET))
 		if selection in range(0, len(collections)):
 			cid = collections[selection]['uuid']
 
@@ -153,10 +161,10 @@ class CrawlerApp:
 
 	# get base url, username, password and return as a tuple
 	def _get_login_credentials(self):
-		self.clear_screen()
+		#self.clear_screen() # comment out to allow repeating attempts to authenticate
 
 		# tell user what these credentials are for
-		print('ENTER LOGIN CREDENTIALS FOR DSPACE')
+		print(messages.PRMPT + '\n\nENTER LOGIN CREDENTIALS FOR DSPACE' + Fore.RESET)
 		print('username: john.doe@gmail.com\npassword: john_is_not_a_doe\n')
 
 		uname = ''
@@ -169,12 +177,12 @@ class CrawlerApp:
 			uname = input('username: ')
 			passwd = getpass.getpass(prompt='password: ', stream=None) 
 
-			confirmation = input('confirm username and password as correct?(Y\\N):')
+			confirmation = input(messages.PRMPT + 'confirm username and password as correct?(Y\\N):' + Fore.RESET)
 			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
 				confirmed = True
 
 			else:
-				retry = input('try again?(Y\\N):')
+				retry = input(messages.PRMPT + 'try again?(Y\\N):' + Fore.RESET)
 				if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
 					print('proceeding...')
 				else:
@@ -183,19 +191,19 @@ class CrawlerApp:
 
 		# Check if base url needs to change and change it if needed
 		print('BASE URL:', baseurl)
-		selection = input('Change base DSpace URL?(Y/N):')
+		selection = input(messages.PRMPT + 'Change base DSpace URL?(Y/N):' + Fore.RESET)
 		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
 				confirmed = False 
 
 		while not confirmed:
-			baseurl = input('Change base DSpace URL?(Y/N)')
+			baseurl = input(messages.PRMPT + 'Change base DSpace URL?(Y/N)' + Fore.RESET)
 
 			confirmation = input('confirm username and password as correct?(Y\\N):')
 			if confirmation == 'Y' or confirmation == 'y' or confirmation == 'yes' or confirmation == 'Yes':
 				confirmed = True
 
 			else:
-				retry = input('try again?(Y\\N):')
+				retry = input(messages.PRMPT + 'try again?(Y\\N):' + Fore.RESET)
 				if retry != 'Y' or retry != 'y' or retry != 'yes' or retry != 'Yes':
 					print('proceeding...')
 				else:
@@ -229,7 +237,7 @@ class CrawlerApp:
 			print('[', i, '] ', item, sep='')
 			i = i + 1
 
-		selection = input("EXECUTE:")
+		selection = input(messages.PRMPT + "EXECUTE:" + Fore.RESET)
 		selection = int(selection)
 
 		if selection in range(0, len(menu)):
@@ -249,10 +257,10 @@ class CrawlerApp:
 	# submit single keyword query to database
 	def query_single(self):
 		print('running single query')
-		query = input('enter keyword for search: ')
+		query = input(messages.PRMPT + 'enter keyword for search: ' + Fore.RESET)
 		# print list of databases
 		self.print_database_menu()
-		database = input('select database to search: ')
+		database = input(messages.PRMPT + 'select database to search: ' + Fore.RESET)
 		# run search
 		self.search(db=int(database), q=query)
 
@@ -273,7 +281,7 @@ class CrawlerApp:
 				print('[{}] {}'.format(i, file))
 				i = i + 1
 
-			choice = input('choose CSV search file: ')
+			choice = input(messages.PRMPT + 'choose CSV search file: ' + Fore.RESET)
 			filename = self.searches_path + csv_file_list[int(choice)]
 
 		except:
@@ -282,7 +290,7 @@ class CrawlerApp:
 
 		# choose database
 		self.print_database_menu()
-		choice = input('choose database: ')
+		choice = input(messages.PRMPT + 'choose database: ' + Fore.RESET)
 		self.search(db=choice, csv_path=filename)
 
 
@@ -299,11 +307,11 @@ class CrawlerApp:
 				print('[{}]'.format(i), csv_str)
 				i = i + 1
 		except:
-			print('failed to find folder \'../data_dump\' in the current parent directory')
+			print('\t' + messages.WARNING + ' failed to find folder \'../data_dump\' in the current parent directory')
 			return
 		
 		# get input to choose data file to export
-		selection = int(input('choose CSV to export:'))
+		selection = int(input(messages.PRMPT + 'choose CSV to export:' + Fore.RESET))
 
 		# export to dspace
 		if not self.logged_in:
@@ -359,15 +367,15 @@ class CrawlerApp:
 		export_toDSpace = False # set this flag to upload search results to DSpace
 
 		# have user set export_toDSpace flag
-		selection = input('EXPORT TO DSPACE?(Y\\N):')
+		selection = input(messages.PRMPT + 'EXPORT TO DSPACE?(Y\\N):' + Fore.RESET)
 		if selection == 'Y' or selection == 'y' or selection == 'yes' or selection == 'Yes':
 			export_toDSpace = True
 			cid = ''
 
 			# have user choose Y/N update doilist.csv with pre-existing DOIs of items in target DSpace collection
 			# if N: DOIs retrieved will only be compared to whatever is already in doilist.csv
-			print('\t[WARNING] If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.')
-			ans = input('Update DOI database?(Y/N):')
+			print('\t', messages.WARNING + ' If adding results to pre-existing collection in DSpace it is wise to update DOI database on machine to prevent duplicates in DSpace.', sep='')
+			ans = input(messages.PRMPT + 'Update DOI database?(Y/N):' + Fore.RESET)
 			if ans == 'Y' or ans == 'y' or ans == 'yes' or ans == 'Yes': # update doilist.csv
 				cid = self._get_cid() # user enter cid
 				self.update_doi_checker(cid) # create file with all DOIs
@@ -427,7 +435,7 @@ class CrawlerApp:
 			self.print_header()
 			self.print_menu()
 			# get/check menu choice
-			selection = input('EXECUTE: ')
+			selection = input(messages.PRMPT + 'EXECUTE: ' + Fore.RESET)
 
 			# validate input
 			if selection == '0' or selection == 'q' or selection == 'quit' or selection == 'exit': # exit program

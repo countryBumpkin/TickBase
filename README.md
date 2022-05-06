@@ -1,4 +1,4 @@
-![TickBaseLogo](https://tickbase.net/wp-content/uploads/2021/01/TickBase-Logo-Horizontal_white-e1610842190868.png)
+![TickBaseLogo](https://data.tickbase.net/assets/images/tickbase.png)
 # TickBase
 Web crawler from TickBase project, summer 2021. The project aimed to:
 1. Automate keyword searches of online article and dataset publishers. Allow users to input individual keyword searches or a CSV file of keywords to be used.
